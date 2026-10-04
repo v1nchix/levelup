@@ -301,6 +301,7 @@ input,select{font-size:16px}
 .onb-nav .btn{margin-top:0}
 .onb-nav .solid{flex:1}
 .profile{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+[hidden]{display:none!important}
 /* закрытые дела */
 .q.locked{opacity:.5;border-style:dashed;cursor:default}
 .q.locked .chk{border-color:rgba(255,255,255,.15)}
@@ -353,6 +354,10 @@ input,select{font-size:16px}
     </div>
   </div>
 
+  <div id="remBanner" hidden class="card banner" style="margin-bottom:12px">
+    <div><h3>Включи напоминания</h3><p class="small" style="margin-top:6px">Бот напомнит, что сегодня по плану, и спасёт серию вечером. Нужно один раз дать согласие в чате с ботом.</p></div>
+    <button class="btn solid" id="remGo">Включить</button>
+  </div>
   <div class="quests" id="quests"></div>
   <div class="subh"><div><h3>Бонусы для быстрых уровней</h3><p class="small" style="margin-top:6px">Собраны под твой образ жизни. В серию не идут, но уровень растёт быстрее.</p></div><span class="xp" id="bonusXp">+0 XP</span></div>
   <div class="quests" id="bonus"></div>
@@ -525,6 +530,8 @@ input,select{font-size:16px}
       <h3>Начать заново</h3>
       <p class="small">Сотрёт все отметки, вес и награды. Анкета останется.</p>
       <div class="ctl"><button class="btn" id="reset">Сбросить всё</button></div>
+      <p class="small" style="margin-top:18px">На сервере хранятся только Telegram ID, часовой пояс и итог дня для напоминаний. <a href="privacy.html" target="_blank" style="color:#fff">Политика конфиденциальности</a></p>
+      <div class="ctl"><button class="btn" id="delSrv">Удалить мои данные с сервера</button></div>
     </div>
   </div>
 </section>
@@ -558,8 +565,9 @@ input,select{font-size:16px}
   <h2>Похвастаться <span class="accent">прогрессом</span></h2>
   <img id="stImg" class="st-img" alt="Карточка прогресса Level Up">
   <label class="st-tg" for="stW"><input type="checkbox" id="stW"> Показывать сброшенный вес</label>
-  <p class="small" id="stHint">Нажми «Поделиться» или зажми картинку пальцем и сохрани, потом выложи в сторис.</p>
-  <div class="onb-nav"><button class="btn" id="stClose">Закрыть</button><button class="btn solid" id="stShare">Поделиться</button></div>
+  <p class="small" id="stHint">Бот пришлёт картинку в чат: оттуда её легко сохранить или переслать в сторис.</p>
+  <button class="btn solid" id="stSend" style="width:100%;margin-top:22px">Прислать в чат с ботом</button>
+  <div class="onb-nav" style="margin-top:10px"><button class="btn" id="stClose">Закрыть</button><button class="btn" id="stShare" style="flex:1">Поделиться</button></div>
 </div></div>
 
 <!-- ================= АНКЕТА ================= -->
@@ -671,6 +679,20 @@ function dn(n){const a=n%10,b=n%100;return a===1&&b!==11?'день':a>=2&&a<=4&&
 const TG=window.Telegram&&Telegram.WebApp&&Telegram.WebApp.initData?Telegram.WebApp:null;
 if(TG){try{TG.ready();TG.expand();TG.setHeaderColor('#050507');TG.setBackgroundColor('#050507');if(TG.setBottomBarColor)TG.setBottomBarColor('#050507');if(TG.disableVerticalSwipes)TG.disableVerticalSwipes()}catch(e){}}
 const CS=TG&&TG.isVersionAtLeast&&TG.isVersionAtLeast('6.9')?TG.CloudStorage:null;
+// сервер Level Up: напоминания и отправка картинок в чат. Туда уходит только итог дня, без веса и замеров.
+const API='https://functions.yandexcloud.net/d4ec38bbqerlda1v5ktp';
+async function api(a,payload){if(!TG)return null;
+  try{const r=await fetch(API+'?a='+a,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({initData:TG.initData,...payload})});return await r.json()}catch(e){return null}}
+let syncTimer=null,lastSync='';
+function syncSoon(){if(!TG||!S.setup)return;clearTimeout(syncTimer);syncTimer=setTimeout(syncNow,1500)}
+async function syncNow(){
+  const st=stats(),tm=addD(TODAY,1),mv=ds=>quests(ds).find(q=>q.id==='move').t;
+  const s={date:TODAY,dc:doneCount(TODAY),open:openQuests(TODAY).length,streak:st.streak,fz:st.fz,lvl:LI+1,xp:st.xp,sex:P().sex,tz:-new Date().getTimezoneOffset(),plan:{[TODAY]:mv(TODAY),[tm]:mv(tm)}};
+  const body=JSON.stringify(s);if(body===lastSync)return;
+  const r=await api('sync',{s});if(!r)return;
+  lastSync=r.ok?body:'';
+  const ban=document.getElementById('remBanner');if(ban)ban.hidden=!(r.need==='consent');
+}
 function haptic(ok){try{if(TG&&TG.HapticFeedback){ok?TG.HapticFeedback.notificationOccurred('success'):TG.HapticFeedback.impactOccurred('light')}}catch(e){}}
 
 // ---------- состояние ----------
@@ -1063,7 +1085,7 @@ function unlockedBetween(a,b){
   const bi=bonusItems().slice(bonusOpen(a),bonusOpen(b)).map(x=>'бонус «'+x.t+'»');
   return q.concat(bi)}
 function commit(before){
-  save();const st=stats(),L0=level(before.xp),L1=level(st.xp);
+  save();syncSoon();const st=stats(),L0=level(before.xp),L1=level(st.xp);
   const fresh=ACH().filter(a=>a.ok(st)&&!S.ach.includes(a.id));
   fresh.forEach(a=>S.ach.push(a.id));if(fresh.length)save();
   renderAll();
@@ -1195,10 +1217,18 @@ async function drawStory(showW){
     rr(x,cx,cy,cw,cw,12);x.fillStyle=fill;x.fill()}
   x.font="600 24px 'Roboto Flex'";sp('7px');x.fillStyle='#8a8a94';x.fillText('ПОСЛЕДНИЕ 4 НЕДЕЛИ',90,oy+2*cw+gap+56);
   x.font="800 34px 'Roboto Flex'";sp('2px');x.fillStyle='#ffffff';x.textAlign='right';x.fillText('@levelup_fit_bot',990,oy+2*cw+gap+58);x.textAlign='left';
-  return c.toDataURL('image/png');
+  return c;
 }
-let stURL='';
-async function storyRender(){$('stImg').style.opacity=.4;stURL=await drawStory($('stW').checked);$('stImg').src=stURL;$('stImg').style.opacity=1}
+let stURL='',stJPG='';
+async function storyRender(){$('stImg').style.opacity=.4;const c=await drawStory($('stW').checked);stURL=c.toDataURL('image/png');stJPG=c.toDataURL('image/jpeg',.9);$('stImg').src=stURL;$('stImg').style.opacity=1}
+$('stSend').onclick=async()=>{
+  if(!TG){$('stHint').textContent='Открой Level Up кнопкой в боте, тогда картинка придёт в чат.';return}
+  const b=$('stSend');b.disabled=true;b.textContent='Отправляю…';
+  const r=await api('story',{img:stJPG});
+  b.disabled=false;b.textContent='Прислать в чат с ботом';
+  if(r&&r.ok){toast('Картинка в чате с ботом');$('story').classList.remove('show')}
+  else $('stHint').textContent='Не получилось отправить. Зажми картинку пальцем и сохрани её.';
+};
 $('storyBtn').onclick=()=>{$('story').classList.add('show');storyRender()};
 $('stW').onchange=storyRender;
 $('stClose').onclick=()=>$('story').classList.remove('show');
@@ -1261,7 +1291,7 @@ function checkSetup(){if(!S.setup)obOpen()}
       keys.forEach(k=>{if(items[k])sent[k]=items[k]});
       const wasOpen=$('onb').classList.contains('show');
       S=unpack(items);saveLocal();if(view<S.start)view=S.start;
-      if(!typing())renderAll();
+      if(!typing())renderAll();syncSoon();
       if(S.setup&&wasOpen)$('onb').classList.remove('show');else checkSetup();
     }
     cloudReady=true;
@@ -1270,7 +1300,14 @@ function checkSetup(){if(!S.setup)obOpen()}
   }catch(e){cloudReady=true;setSync('Облако Телеграма не ответило. Прогресс пока в памяти телефона.')}
 })();
 if(S.start>TODAY)S.start=TODAY;
-saveLocal();renderAll();checkSetup();
+saveLocal();renderAll();checkSetup();syncSoon();
+$('remGo').onclick=()=>{try{TG.openTelegramLink('https://t.me/levelup_fit_bot?start=reminders');TG.close()}catch(e){}};
+let delArm=0;
+$('delSrv').onclick=async()=>{const b=$('delSrv');
+  if(Date.now()-delArm>4000){delArm=Date.now();b.textContent='Точно? Нажми ещё раз';setTimeout(()=>{b.textContent='Удалить мои данные с сервера'},4000);return}
+  delArm=0;b.textContent='Удалить мои данные с сервера';
+  const r=await api('delete',{});toast(r&&r.ok?'Данные на сервере удалены, напоминания выключены':'Не получилось. Напиши боту команду /delete');lastSync='__deleted__'};
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')syncSoon()});
 </script>
 </body>
 </html>
