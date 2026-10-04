@@ -781,7 +781,7 @@ input,select{font-size:16px}
 const KEY='levelup.v1';
 // Версия сборки: проставляется скриптом deploy-app.ps1. Телеграм любит показывать старую копию из кэша,
 // поэтому при открытии приложение сверяет версию с сайтом и, если вышла новая, перезагружается.
-const BUILD='20261004-232319';
+const BUILD='20261004-232608';
 async function checkUpdate(){
   if(BUILD==='dev'||location.protocol==='file:')return;
   try{const t=await (await fetch('./?b='+Date.now(),{cache:'no-store'})).text(),m=t.match(/BUILD\s*=\s*'(\d{8}-\d{6})'/);
@@ -844,30 +844,33 @@ function tone(f,start,dur,vol,type){const a=audio();if(!a)return;const o=a.creat
   o.type=type||'sine';o.frequency.setValueAtTime(f,t);g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+.012);g.gain.exponentialRampToValueAtTime(.0001,t+dur);
   o.connect(g);g.connect(a.destination);o.start(t);o.stop(t+dur+.02)}
 // «Стекло» в духе системных звуков iPhone: колокольчик (FM-синтез) с мягким эхом и тихий щелчок клавиатуры
+// Эхо на линии задержки, а не на ConvolverNode: свёртка в Телеграме на iPhone срывала весь звук.
 let REV=null;
-function reverb(a){if(REV)return REV;const len=Math.floor(a.sampleRate*1.4),b=a.createBuffer(2,len,a.sampleRate);
-  for(let ch=0;ch<2;ch++){const d=b.getChannelData(ch);for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/len,3.2)}
-  const cv=a.createConvolver(),wet=a.createGain();cv.buffer=b;wet.gain.value=.2;cv.connect(wet);wet.connect(a.destination);REV=cv;return cv}
+function reverb(a){if(REV)return REV;const inp=a.createGain(),dl=a.createDelay(1),fb=a.createGain(),lp=a.createBiquadFilter(),wet=a.createGain();
+  dl.delayTime.value=.13;fb.gain.value=.3;lp.type='lowpass';lp.frequency.value=2800;wet.gain.value=.24;
+  inp.connect(dl);dl.connect(lp);lp.connect(fb);fb.connect(dl);lp.connect(wet);wet.connect(a.destination);REV=inp;return inp}
+const wetTo=(a,node)=>{try{node.connect(reverb(a))}catch(e){}};  // если эхо не завелось, звук всё равно играет без него
 function bell(f,start,dur,vol){const a=audio();if(!a)return;const t=a.currentTime+start;
   const env=a.createGain();env.gain.setValueAtTime(0,t);env.gain.linearRampToValueAtTime(vol,t+.005);env.gain.exponentialRampToValueAtTime(.0001,t+dur);
   const lp=a.createBiquadFilter();lp.type='lowpass';lp.frequency.value=6500;lp.Q.value=.3;
   const car=a.createOscillator(),mod=a.createOscillator(),mg=a.createGain();car.type=mod.type='sine';car.frequency.value=f;mod.frequency.value=f*3.5;
   mg.gain.setValueAtTime(f*.9,t);mg.gain.exponentialRampToValueAtTime(1,t+dur*.5);mod.connect(mg);mg.connect(car.frequency);
   const oct=a.createOscillator(),og=a.createGain();oct.type='sine';oct.frequency.value=f*2;og.gain.setValueAtTime(vol*.18,t);og.gain.exponentialRampToValueAtTime(.0001,t+dur*.45);
-  car.connect(env);env.connect(lp);oct.connect(og);og.connect(lp);lp.connect(a.destination);lp.connect(reverb(a));
+  car.connect(env);env.connect(lp);oct.connect(og);og.connect(lp);lp.connect(a.destination);wetTo(a,lp);
   [car,mod,oct].forEach(o=>{o.start(t);o.stop(t+dur+.05)})}
-function tap(start,vol,freq){const a=audio();if(!a)return;const t=a.currentTime+start,len=Math.floor(a.sampleRate*.028),b=a.createBuffer(1,len,a.sampleRate),d=b.getChannelData(0);
-  for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/len,5);
-  const s=a.createBufferSource(),bp=a.createBiquadFilter(),g=a.createGain();s.buffer=b;bp.type='bandpass';bp.frequency.value=freq||2600;bp.Q.value=1.4;g.gain.value=vol;
-  s.connect(bp);bp.connect(g);g.connect(a.destination);s.start(t)}
+// мягкий щелчок: короткий синус с падением высоты (без шума, звучит чисто на любом телефоне)
+function tap(start,vol,freq){const a=audio();if(!a)return;const t=a.currentTime+start,f=(freq||2600)*.6,o=a.createOscillator(),g=a.createGain();o.type='sine';
+  o.frequency.setValueAtTime(f,t);o.frequency.exponentialRampToValueAtTime(f*.55,t+.035);
+  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol*.45,t+.002);g.gain.exponentialRampToValueAtTime(.0001,t+.05);
+  o.connect(g);g.connect(a.destination);o.start(t);o.stop(t+.07)}
 function chord(fs,start,dur,vol){const a=audio();if(!a)return;const t=a.currentTime+start;fs.forEach(f=>{const o=a.createOscillator(),g=a.createGain();o.type='sine';o.frequency.value=f;
-  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+.25);g.gain.exponentialRampToValueAtTime(.0001,t+dur);o.connect(g);g.connect(a.destination);g.connect(reverb(a));o.start(t);o.stop(t+dur+.05)})}
+  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+.25);g.gain.exponentialRampToValueAtTime(.0001,t+dur);o.connect(g);g.connect(a.destination);wetTo(a,g);o.start(t);o.stop(t+dur+.05)})}
 // щипок струны (для «Арфы»): основной тон и обертоны, тембр темнеет по мере затухания
 function pluck(f,start,dur,vol,bright){const a=audio();if(!a)return;const t=a.currentTime+start,lp=a.createBiquadFilter();lp.type='lowpass';
   lp.frequency.setValueAtTime(bright||6000,t);lp.frequency.exponentialRampToValueAtTime(900,t+dur);
   [[1,1],[2,.32],[3.01,.12],[5.4,.05]].forEach(([r,v])=>{const o=a.createOscillator(),g=a.createGain(),d=dur*(r>2?.35:1);o.frequency.value=f*r;
     g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol*v,t+.003);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g);g.connect(lp);o.start(t);o.stop(t+d+.05)});
-  lp.connect(a.destination);lp.connect(reverb(a))}
+  lp.connect(a.destination);wetTo(a,lp)}
 // Наборы звуков (выбрала владелица 05.10.2026): стекло по умолчанию, арфа, 8-бит
 const SETS={
   harp:{
