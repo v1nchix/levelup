@@ -301,6 +301,20 @@ input,select{font-size:16px}
 .onb-nav .btn{margin-top:0}
 .onb-nav .solid{flex:1}
 .profile{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+/* закрытые дела */
+.q.locked{opacity:.5;border-style:dashed;cursor:default}
+.q.locked .chk{border-color:rgba(255,255,255,.15)}
+.q.locked .chk svg{opacity:1;transform:none;stroke:var(--muted)}
+.heat i.frz{background:rgba(201,204,214,.15);outline:1px dashed rgba(255,255,255,.6);outline-offset:-1px}
+/* таймер */
+.over .card.tm{max-width:480px;width:100%;text-align:left}
+.tm .tag{margin-left:0}
+.tm-big{font-family:var(--wide);font-variation-settings:'wdth' 110,'opsz' 144;font-weight:900;font-size:clamp(60px,19vw,140px);line-height:1;margin:26px 0 18px;font-variant-numeric:tabular-nums;text-shadow:0 0 40px rgba(255,255,255,.3)}
+.tm .bar{margin-top:0}
+/* карточка для сторис */
+.st-img{display:block;width:100%;max-height:52vh;object-fit:contain;border-radius:14px;border:1px solid var(--line);margin-top:18px;background:#000;-webkit-touch-callout:default}
+.st-tg{display:flex;align-items:center;gap:10px;margin-top:16px;font-size:14px;color:#c3c3ca;cursor:pointer}
+.st-tg input{width:20px;height:20px;accent-color:#fff}
 </style>
 </head>
 <body>
@@ -333,7 +347,7 @@ input,select{font-size:16px}
         <div class="ringc"><b id="ringXp">0</b><span>XP ЗА ДЕНЬ</span></div>
       </div>
       <p class="ringmsg" id="ringMsg"></p>
-      <div class="chips"><span class="mini" id="chipStreak"></span><span class="mini" id="chipDone"></span></div>
+      <div class="chips"><span class="mini" id="chipStreak"></span><span class="mini" id="chipDone"></span><span class="mini" id="chipFz"></span></div>
       <div class="lvlbar"><i id="lvlFill" style="width:0"></i></div>
       <div class="lvl" id="lvlTxt"></div>
     </div>
@@ -437,6 +451,7 @@ input,select{font-size:16px}
     <div class="kg" style="margin-top:14px"><b id="kgLost">0,0</b><span class="lead" style="margin:0" id="kgOf"></span></div>
     <div class="bar"><i id="kgBar" style="width:0"></i></div>
     <div class="marks" id="kgMarks"></div>
+    <button class="btn solid" id="storyBtn" style="margin-top:24px">Карточка для сторис</button>
   </div>
   <div class="totals" id="totals"></div>
 
@@ -472,6 +487,7 @@ input,select{font-size:16px}
         <div class="fld"><label for="mH">Бёдра, см</label><input id="mH" type="text" inputmode="decimal"></div>
         <div class="fld"><label for="mP">Планка, сек</label><input id="mP" type="text" inputmode="numeric"></div>
         <button class="btn solid" id="mAdd">Сохранить</button>
+        <button class="btn" id="plankBtn">Секундомер планки</button>
       </div>
       <div class="table" id="mList" style="margin-top:22px"></div>
     </div>
@@ -524,6 +540,27 @@ input,select{font-size:16px}
 
 <div class="toast" id="toast"></div>
 <div class="over" id="over"><div class="card"><span class="tag" id="oTag">Новый уровень</span><h2 id="oTitle"></h2><p class="lead" id="oText" style="margin-left:auto;margin-right:auto"></p><button class="btn solid" id="oBtn">Погнали дальше</button></div></div>
+
+<!-- ================= ТАЙМЕР ================= -->
+<div class="over" id="tmr"><div class="card tm">
+  <span class="tag" id="tmTag">Таймер</span>
+  <h2 id="tmPhase"></h2>
+  <div class="tm-big" id="tmBig">0:00</div>
+  <div class="bar"><i id="tmBar" style="width:0"></i></div>
+  <p class="small" id="tmSub" style="font-size:13px;color:var(--muted)"></p>
+  <p class="small">Не выключай экран: на смене интервала будет сигнал и вибрация.</p>
+  <div class="onb-nav"><button class="btn" id="tmPause">Пауза</button><button class="btn solid" id="tmStop">Завершить</button></div>
+</div></div>
+
+<!-- ================= СТОРИС ================= -->
+<div class="over" id="story"><div class="card ob">
+  <span class="tag">Сторис</span>
+  <h2>Похвастаться <span class="accent">прогрессом</span></h2>
+  <img id="stImg" class="st-img" alt="Карточка прогресса Level Up">
+  <label class="st-tg" for="stW"><input type="checkbox" id="stW"> Показывать сброшенный вес</label>
+  <p class="small" id="stHint">Нажми «Поделиться» или зажми картинку пальцем и сохрани, потом выложи в сторис.</p>
+  <div class="onb-nav"><button class="btn" id="stClose">Закрыть</button><button class="btn solid" id="stShare">Поделиться</button></div>
+</div></div>
 
 <!-- ================= АНКЕТА ================= -->
 <div class="over" id="onb"><div class="card ob">
@@ -797,11 +834,30 @@ function rec(ds){return S.days[ds]||(S.days[ds]={done:{},steps:0,water:0,sets:0,
 function peek(ds){return S.days[ds]||{done:{},steps:0,water:0,sets:0,stp:0}}
 function bonusXP(ds){const r=peek(ds);return (squatsOn()?Math.min(r.sets||0,10)*3:0)+(stepperOn()?Math.min(r.stp||0,9)*6:0)+bonuses().reduce((a,b)=>a+(r.done[b.id]?b.xp:0),0)}
 const BASE=125;
+// Мягкий старт: часть дел и бонусов открывается с уровнями (индекс уровня с нуля)
+const Q_UNLOCK={body:1,clean:2,sleep:3};
+let LI=0;
+const qOpen=(id,li)=>(Q_UNLOCK[id]||0)<=(li==null?LI:li);
+const openQuests=(ds,li)=>quests(ds).filter(q=>qOpen(q.id,li));
+function bonusItems(){const B=[];
+  if(stepperOn())B.push({id:'_stp',t:'Степпер'});
+  if(squatsOn())B.push({id:'_sets',t:has('life','games')?'Приседания между катками':'Приседания раз в час'});
+  return B.concat(bonuses())}
+const bonusOpen=li=>2+(li==null?LI:li);
 function isDone(ds,q){const r=peek(ds);if(q.type==='steps')return r.steps>=info(ds).steps;if(q.type==='water')return r.water>=6;return !!r.done[q.id]}
 function dayBase(ds){return quests(ds).reduce((a,q)=>a+(isDone(ds,q)?q.xp:0),0)}
 function dayXP(ds){return dayBase(ds)+bonusXP(ds)}
 function doneCount(ds){return quests(ds).filter(q=>isDone(ds,q)).length}
-function goodDay(ds){return dayBase(ds)>=60}
+const DAY_OK=3;
+function goodDay(ds){return doneCount(ds)>=DAY_OK}
+const delo=n=>{const a=n%10,b=n%100;return a===1&&b!==11?'дело':a>=2&&a<=4&&(b<12||b>14)?'дела':'дел'};
+// Серия с заморозками: каждые 7 дней подряд дают заморозку (максимум 2), она спасает пропущенный день
+function streakInfo(){let run=0,best=0,fz=0;const used=[];
+  for(let ds=S.start;ds<=TODAY;ds=addD(ds,1)){
+    if(goodDay(ds)){run++;if(run%7===0&&fz<2)fz++}
+    else if(ds!==TODAY){if(run>0&&fz>0){fz--;used.push(ds)}else{run=0;fz=0}}
+    best=Math.max(best,run)}
+  return {streak:run,best,fz,used}}
 
 function weights(){return Object.keys(S.days).sort().filter(d=>S.days[d].weight).map(d=>({d,w:S.days[d].weight}))}
 function avg7(W,ds){const a=W.filter(x=>x.d<=ds&&diff(x.d,ds)<7);return a.length?a.reduce((t,x)=>t+x.w,0)/a.length:null}
@@ -811,13 +867,12 @@ function stats(){
   const B=bonuses();
   Object.keys(S.days).sort().forEach(ds=>{
     const r=S.days[ds];s.xp+=dayXP(ds);s.steps+=r.steps||0;s.sets+=r.sets||0;s.stp+=r.stp||0;
-    const qs=quests(ds),dc=qs.filter(q=>isDone(ds,q)).length;s.quests+=dc;if(dc===qs.length)s.perfect++;
+    const qs=openQuests(ds),dc=qs.filter(q=>isDone(ds,q)).length;s.quests+=doneCount(ds);if(dc===qs.length)s.perfect++;
     if(r.done.move&&info(ds).run)s.runs++;
     if((r.water||0)>=6)s.waterDays++;
     if(B.every(b=>r.done[b.id]))s.bonusAll++;
   });
-  let run=0;for(let ds=S.start;ds<=TODAY;ds=addD(ds,1)){if(goodDay(ds)){run++;s.best=Math.max(s.best,run)}else run=0}
-  let d=goodDay(TODAY)?TODAY:addD(TODAY,-1);while(d>=S.start&&goodDay(d)){s.streak++;d=addD(d,-1)}
+  const si=streakInfo();s.streak=si.streak;s.best=si.best;s.fz=si.fz;s.used=si.used;
   S.measures.forEach(m=>{if(m.p)s.plank=Math.max(s.plank,m.p)});
   const W=weights();s.cur=W.length?avg7(W,W[W.length-1].d):null;s.lost=s.cur!=null?Math.max(0,S.startWeight-s.cur):0;
   return s;
@@ -826,7 +881,7 @@ const I_FIRE='M12 2c1 4 6 6 6 12a6 6 0 0 1-12 0c0-3 2-5 3-6 0 3 2 4 3 4 0-4-1-7 
 function ACH(){return [
   {id:'first',t:'Первый шаг',s:'Первая галочка',ok:s=>s.quests>=1,i:'M5 12l5 5L20 7'},
   {id:'run1',t:'Кроссовки в деле',s:P().run==='no'?'Первая быстрая ходьба':'Первая пробежка',ok:s=>s.runs>=1,i:'M4 18h6l2-6h6M10 18l2-6'},
-  {id:'perfect',t:'Идеальный день',s:'Все 7 дел за день',ok:s=>s.perfect>=1,i:I_STAR},
+  {id:'perfect',t:'Идеальный день',s:'Все открытые дела за день',ok:s=>s.perfect>=1,i:I_STAR},
   {id:'st3',t:'Три дня подряд',s:'Серия 3 дня',ok:s=>s.best>=3,i:I_FIRE},
   {id:'st7',t:'Неделя силы',s:'Серия 7 дней',ok:s=>s.best>=7,i:I_FIRE},
   {id:'st21',t:'Привычка',s:'Серия 21 день',ok:s=>s.best>=21,i:I_FIRE},
@@ -846,6 +901,7 @@ function ACH(){return [
 
 // ---------- отрисовка ----------
 const chkSvg='<svg viewBox="0 0 24 24" fill="none" stroke-width="3"><path d="M5 12l5 5L20 7"/></svg>';
+const lockSvg='<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
 const qCard=(q,done,ctl,cls)=>`<div class="card q ${cls||''} ${done?'done':''}" ${q.id?`data-q="${q.id}"`:''} ${q.typed?'data-typed':''}><div class="chk">${chkSvg}</div><div class="qb"><div class="qh"><h3>${q.t}</h3><span class="xp">${q.xpTxt||'+'+q.xp+' XP'}</span></div><p>${q.s}</p>${ctl||''}</div></div>`;
 
 function renderToday(){
@@ -853,29 +909,36 @@ function renderToday(){
   const isToday=view===TODAY;
   $('dlabel').textContent=(isToday?'Сегодня':(view===addD(TODAY,-1)?'Вчера':WD[I.wd]+', '+d.getDate()+' '+MON[d.getMonth()]))+' · день '+(I.n+1)+' · неделя '+I.week;
   $('dprev').disabled=view<=S.start;$('dnext').disabled=view>=TODAY;
-  const T=dc===qs.length?['Идеальный ','день','']:TITLES[(I.n%TITLES.length+TITLES.length)%TITLES.length];
+  const oq=openQuests(view),odc=oq.filter(q=>isDone(view,q)).length,maxAv=oq.reduce((a,q)=>a+q.xp,0);
+  const T=odc===oq.length?['Идеальный ','день','']:TITLES[(I.n%TITLES.length+TITLES.length)%TITLES.length];
   $('hTitle').innerHTML=T[0]+'<span class="accent">'+T[1]+'</span>'+T[2];
   const C=COACH();let msg=C[(I.n%C.length+C.length)%C.length];
   if(st.streak>=3&&isToday)msg='Серия '+st.streak+' '+dn(st.streak)+'. Не отпускай её сегодня. '+msg;
+  if(isToday&&st.used.includes(addD(TODAY,-1)))msg='Вчера сработала заморозка: серия жива. '+msg;
   $('coach').textContent=msg;
-  $('ringFg').style.strokeDashoffset=553*(1-Math.min(1,base/BASE));$('ringXp').textContent=xp;
-  $('ringMsg').innerHTML=dc===0?'Первая галочка самая важная. <b>Начни с самого лёгкого.</b>':dc===qs.length?'<b>Всё сделано.</b> Сегодня ты '+G('та','тот')+', кем хочешь стать.':base>=60?'<b>День засчитан в серию.</b> Каждое следующее дело это бонус.':'До зачёта дня в серию: <b>'+(60-base)+' XP</b>';
-  $('chipStreak').innerHTML='Серия <b>'+st.streak+'</b>';$('chipDone').innerHTML='Дел <b>'+dc+'/'+qs.length+'</b>';
+  $('ringFg').style.strokeDashoffset=553*(1-Math.min(1,base/maxAv));$('ringXp').textContent=xp;
+  $('ringMsg').innerHTML=dc===0?'Первая галочка самая важная. <b>Начни с самого лёгкого.</b>':odc===oq.length?'<b>Всё сделано.</b> Сегодня ты '+G('та','тот')+', кем хочешь стать.':dc>=DAY_OK?'<b>День засчитан в серию.</b> Каждое следующее дело это бонус.':'До зачёта дня в серию: ещё <b>'+(DAY_OK-dc)+' '+delo(DAY_OK-dc)+'</b>';
+  $('chipStreak').innerHTML='Серия <b>'+st.streak+'</b>';$('chipDone').innerHTML='Дел <b>'+odc+'/'+oq.length+'</b>';
+  $('chipFz').innerHTML=st.fz?'Заморозки <b>'+st.fz+'</b>':'До заморозки <b>'+(7-st.streak%7)+' '+dn(7-st.streak%7)+'</b>';
   const L=level(st.xp);$('lvlFill').style.width=(L.to?((st.xp-L.from)/(L.to-L.from)*100):100)+'%';
   $('lvlTxt').textContent='Уровень '+(L.i+1)+' · '+L.name+(L.to?' · до следующего '+(L.to-st.xp)+' XP':'');
   $('topr').textContent='УР. '+(L.i+1)+' · '+fmt(st.xp)+' XP';
 
   $('quests').innerHTML=qs.map(q=>{let ctl='';
+    if(!qOpen(q.id)){const lv=Q_UNLOCK[q.id]+1;return `<div class="card q locked" data-lock="${lv}"><div class="chk">${lockSvg}</div><div class="qb"><div class="qh"><h3>${q.t}</h3><span class="xp">УР. ${lv}</span></div><p>Откроется на уровне ${lv}. Собирай XP, и дело добавится в список.</p></div></div>`}
+    if(q.id==='move'&&isToday)ctl=`<div class="ctl"><button class="btn solid" data-timer="move">Запустить таймер</button></div>`;
     if(q.type==='steps')ctl=`<div class="ctl"><input data-steps type="text" inputmode="numeric" enterkeyhint="done" placeholder="0" value="${r.steps||''}" aria-label="Шаги за день"><span class="small" style="margin:0">${r.steps?Math.min(100,Math.round(r.steps/I.steps*100))+'% от цели':''}</span></div>`;
     if(q.type==='water')ctl=`<div class="ctl"><div class="cnt"><button class="ib" data-w="-1" aria-label="Минус стакан">−</button><b>${r.water||0}</b><button class="ib" data-w="1" aria-label="Плюс стакан">+</button></div><div class="drops">${Array.from({length:8},(_,i)=>`<i class="${i<(r.water||0)?'on':''}"></i>`).join('')}</div></div>`;
     return qCard({...q,typed:!!q.type},isDone(view,q),ctl);
   }).join('');
 
   $('bonusXp').textContent='+'+bonusXP(view)+' XP';
-  let b='';
-  if(stepperOn())b+=qCard({t:'Степпер',xpTxt:'+6 XP за 10 минут',typed:true,s:'Шагай под работу, созвон или серию. Телефон в карман, и шаги пойдут в «Шаги». До 90 минут в день.'},r.stp>0,`<div class="ctl"><div class="cnt"><button class="ib" data-p="-1" aria-label="Минус 10 минут">−</button><b>${(r.stp||0)*10}</b><button class="ib" data-p="1" aria-label="Плюс 10 минут">+</button></div><span class="small" style="margin:0">минут сегодня</span></div>`,'bonus');
-  if(squatsOn())b+=qCard({t:has('life','games')?'10 приседаний между катками':'10 приседаний раз в час',xpTxt:'+3 XP за подход',typed:true,s:has('life','games')?'После каждой игры встань и сделай 10. До 10 подходов в день.':'Раз в час за компьютером встань и сделай 10. До 10 подходов в день.'},r.sets>0,`<div class="ctl"><div class="cnt"><button class="ib" data-s="-1" aria-label="Минус подход">−</button><b>${r.sets||0}</b><button class="ib" data-s="1" aria-label="Плюс подход">+</button></div><span class="small" style="margin:0">${(r.sets||0)*10} приседаний сегодня</span></div>`,'bonus');
-  b+=bonuses().map(q=>qCard(q,!!r.done[q.id],'','bonus')).join('');
+  let b='';const BI=bonusItems(),nOpen=bonusOpen(),openIds=BI.slice(0,nOpen).map(x=>x.id);
+  if(stepperOn()&&openIds.includes('_stp'))b+=qCard({t:'Степпер',xpTxt:'+6 XP за 10 минут',typed:true,s:'Шагай под работу, созвон или серию. Телефон в карман, и шаги пойдут в «Шаги». До 90 минут в день.'},r.stp>0,`<div class="ctl"><div class="cnt"><button class="ib" data-p="-1" aria-label="Минус 10 минут">−</button><b>${(r.stp||0)*10}</b><button class="ib" data-p="1" aria-label="Плюс 10 минут">+</button></div><span class="small" style="margin:0">минут сегодня</span></div>`,'bonus');
+  if(squatsOn()&&openIds.includes('_sets'))b+=qCard({t:has('life','games')?'10 приседаний между катками':'10 приседаний раз в час',xpTxt:'+3 XP за подход',typed:true,s:has('life','games')?'После каждой игры встань и сделай 10. До 10 подходов в день.':'Раз в час за компьютером встань и сделай 10. До 10 подходов в день.'},r.sets>0,`<div class="ctl"><div class="cnt"><button class="ib" data-s="-1" aria-label="Минус подход">−</button><b>${r.sets||0}</b><button class="ib" data-s="1" aria-label="Плюс подход">+</button></div><span class="small" style="margin:0">${(r.sets||0)*10} приседаний сегодня</span></div>`,'bonus');
+  b+=bonuses().filter(q=>openIds.includes(q.id)).map(q=>qCard(q,!!r.done[q.id],'','bonus')).join('');
+  if(BI.length>nOpen){const nx=BI[nOpen],lv=nOpen-1+1;
+    b+=`<div class="card q bonus locked" data-lock="${lv}"><div class="chk">${lockSvg}</div><div class="qb"><div class="qh"><h3>Ещё ${BI.length-nOpen} ${BI.length-nOpen===1?'бонус':BI.length-nOpen<5?'бонуса':'бонусов'}</h3><span class="xp">УР. ${lv}</span></div><p>Следующий, «${nx.t}», откроется на уровне ${lv}. Остальные на следующих уровнях.</p></div></div>`}
   $('bonus').innerHTML=b;
 
   $('wIn').value=r.weight?f1(r.weight):'';
@@ -969,10 +1032,11 @@ function renderChart(){
   $('chart').innerHTML=`<svg class="chart" viewBox="0 0 ${w} ${h}" role="img" aria-label="График веса">${g}</svg>`;
 }
 function renderHeat(){
-  const startMon=addD(S.start,-((parse(S.start).getDay()+6)%7)),end=addD(S.start,7*18);
+  const startMon=addD(S.start,-((parse(S.start).getDay()+6)%7)),end=addD(S.start,7*18),used=new Set(streakInfo().used);
   let h='';for(let d=startMon;d<=end;d=addD(d,1)){
     if(d<S.start){h+='<i class="pre"></i>';continue}
     if(d>TODAY){h+='<i class="fut"></i>';continue}
+    if(used.has(d)){h+=`<i class="frz" title="${d}: сработала заморозка"></i>`;continue}
     const p=dayBase(d)/BASE,l=p>=1?4:p>=.6?3:p>=.35?2:p>0?1:0;
     h+=`<i class="l${l} ${d===TODAY?'tod':''}" title="${d}: ${dayXP(d)} XP"></i>`;
   }
@@ -986,28 +1050,36 @@ function renderMe(){
   const chips=[LBL.sex[p.sex],...txt('day'),...txt('commute'),p.time+' мин в день',...txt('run'),...txt('chrono'),...txt('inv'),...txt('life'),...txt('food')];
   $('profile').innerHTML=S.p?chips.map(c=>`<span class="mini">${c}</span>`).join(''):'';
 }
-function renderAll(){renderToday();renderPlan();renderProg();renderMe()}
+function renderAll(){LI=level(stats().xp).i;renderToday();renderPlan();renderProg();renderMe()}
 
 // ---------- обратная связь ----------
 let tt;
 function toast(text,xp){haptic(false);const t=$('toast');t.innerHTML=(xp?`<span class="xp">+${xp} XP</span>`:'')+'<span>'+text+'</span>';t.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),2400)}
 function overlay(tag,title,text){haptic(true);$('oTag').textContent=tag;$('oTitle').innerHTML=title;$('oText').textContent=text;$('over').classList.add('show')}
 $('oBtn').onclick=()=>$('over').classList.remove('show');
-function snap(){return {xp:stats().xp,base:dayBase(view),dc:doneCount(view)}}
+function snap(){const st=stats();return {xp:st.xp,fz:st.fz,dc:doneCount(view),odc:openQuests(view).filter(q=>isDone(view,q)).length}}
+function unlockedBetween(a,b){
+  const q=quests(TODAY).filter(x=>Q_UNLOCK[x.id]>a&&Q_UNLOCK[x.id]<=b).map(x=>'«'+x.t+'»');
+  const bi=bonusItems().slice(bonusOpen(a),bonusOpen(b)).map(x=>'бонус «'+x.t+'»');
+  return q.concat(bi)}
 function commit(before){
   save();const st=stats(),L0=level(before.xp),L1=level(st.xp);
   const fresh=ACH().filter(a=>a.ok(st)&&!S.ach.includes(a.id));
   fresh.forEach(a=>S.ach.push(a.id));if(fresh.length)save();
   renderAll();
-  if(L1.i>L0.i)overlay('Новый уровень '+(L1.i+1),'Уровень<br><span class="accent">'+L1.name+'</span>','Уровень растёт от каждой галочки. Тело растёт следом, просто медленнее. Продолжай.');
+  const oq=openQuests(view),odc=oq.filter(q=>isDone(view,q)).length;
+  if(L1.i>L0.i){const u=unlockedBetween(L0.i,L1.i);overlay('Новый уровень '+(L1.i+1),'Уровень<br><span class="accent">'+L1.name+'</span>',u.length?'Открыто: '+u.join(', ')+'.':'Уровень растёт от каждой галочки. Тело растёт следом, просто медленнее. Продолжай.')}
+  else if(st.fz>before.fz)overlay('Награда за серию','Заморозка<br><span class="accent">получена</span>','7 дней подряд! Если однажды пропустишь день, заморозка сохранит серию. Копится до двух.');
   else if(fresh.length)overlay('Новая награда',fresh[0].t.replace(/(\S+)$/,'<span class="accent">$1</span>'),fresh[0].s+'. Это уже не случайность, это ты.');
-  else if(before.base<60&&dayBase(view)>=60&&view===TODAY)toast('День засчитан в серию: '+st.streak+' '+dn(st.streak));
-  else if(before.dc<quests(view).length&&doneCount(view)===quests(view).length)toast('Идеальный день. Я тобой горжусь.');
+  else if(before.dc<DAY_OK&&doneCount(view)>=DAY_OK&&view===TODAY)toast('День засчитан в серию: '+st.streak+' '+dn(st.streak));
+  else if(before.odc<oq.length&&odc===oq.length)toast('Идеальный день. Я тобой горжусь.');
 }
 
 // ---------- действия ----------
 document.addEventListener('click',e=>{
-  if(e.target.closest('#onb'))return;
+  if(e.target.closest('#onb,#tmr,#story'))return;
+  const tb=e.target.closest('[data-timer]');if(tb){timerOpen('move');return}
+  const lk=e.target.closest('[data-lock]');if(lk){toast('Откроется на уровне '+lk.dataset.lock+'. Собирай XP');return}
   const w=e.target.closest('[data-w]'),s=e.target.closest('[data-s]'),en=e.target.closest('[data-e]'),p=e.target.closest('[data-p]');
   if(w||s||p){const b=snap(),r=rec(view);
     if(p){const v=+p.dataset.p;r.stp=Math.max(0,(r.stp||0)+v);if(v>0&&r.stp<=9)toast(r.stp*10+' минут на степпере. '+rnd(PRAISE()),6)}
@@ -1044,6 +1116,98 @@ $('reset').onclick=()=>{const b=$('reset');
 function tab(id){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id));document.querySelectorAll('.tabbar button').forEach(b=>b.classList.toggle('on',b.dataset.t===id));window.scrollTo({top:0});if(id==='s-me')renderMe()}
 document.querySelectorAll('.tabbar button').forEach(b=>b.onclick=()=>tab(b.dataset.t));
 document.addEventListener('mousemove',e=>{const c=e.target.closest&&e.target.closest('.card');if(!c)return;const r=c.getBoundingClientRect();c.style.setProperty('--x',(e.clientX-r.left)+'px');c.style.setProperty('--y',(e.clientY-r.top)+'px')});
+
+// ---------- таймер: интервалы бега, ходьба, секундомер планки ----------
+const rep=(n,a)=>{let r=[];for(let i=0;i<n;i++)r=r.concat(a);return r};
+const RSEQ=[()=>rep(8,[['run',60],['walk',90]]),()=>rep(6,[['run',90],['walk',120]]),()=>rep(2,[['run',90],['walk',90],['run',180],['walk',180]]),
+  ()=>[['run',180],['walk',90],['run',300],['walk',150],['run',180],['walk',90],['run',300]],()=>rep(2,[['run',480],['walk',300]]),()=>rep(2,[['run',600],['walk',180]]),
+  ()=>[['run',1200]],()=>[['run',1500]],()=>[['run',1800]]];
+const PH={warm:['Разминка','шагом'],run:['Бег','легко'],walk:['Шаг','отдыхаем'],fast:['Ходьба','быстро'],calm:['Прогулка','в своём темпе']};
+function moveSeq(ds){const I=info(ds);
+  if(I.run)return I.norun?[['fast',walkMin(I)*60]]:[['warm',300],...RSEQ[I.rw-1]()];
+  return [['calm',(I.wd===0?({15:20,30:30,45:45})[I.T]:({15:15,30:20,45:30})[I.T])*60]]}
+let TM=null,actx=null,wlock=null,stopArm=0;
+const mmss=s=>{s=Math.max(0,Math.ceil(s));return Math.floor(s/60)+':'+pad(s%60)};
+function beep(f,d){try{if(!actx)return;const o=actx.createOscillator(),g=actx.createGain();o.frequency.value=f;o.connect(g);g.connect(actx.destination);g.gain.setValueAtTime(.25,actx.currentTime);g.gain.exponentialRampToValueAtTime(.001,actx.currentTime+d);o.start();o.stop(actx.currentTime+d)}catch(e){}}
+function alertPhase(){haptic(true);try{navigator.vibrate&&navigator.vibrate([200,100,200])}catch(e){}beep(880,.25);setTimeout(()=>beep(1175,.3),280)}
+async function keepAwake(){try{if(navigator.wakeLock&&!wlock){wlock=await navigator.wakeLock.request('screen');wlock.addEventListener('release',()=>{wlock=null})}}catch(e){}}
+function timerOpen(mode){
+  try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();actx.resume()}catch(e){}
+  const seq=mode==='move'?moveSeq(view):null;
+  TM={mode,seq,total:seq?seq.reduce((a,x)=>a+x[1],0):0,start:Date.now(),pausedAt:0,paused:0,idx:-1,done:false};
+  $('tmTag').textContent=mode==='plank'?'Секундомер планки':'Таймер';$('tmPause').textContent='Пауза';$('tmStop').textContent=mode==='plank'?'Стоп':'Завершить';
+  $('tmr').classList.add('show');keepAwake();tmTick();TM.iv=setInterval(tmTick,250);
+}
+const tmElapsed=()=>((TM.pausedAt||Date.now())-TM.start-TM.paused)/1000;
+function tmTick(){if(!TM)return;const el=tmElapsed();
+  if(TM.mode==='plank'){$('tmPhase').innerHTML='Планка <span class="accent">держись</span>';$('tmBig').textContent=mmss(el);$('tmSub').textContent='Тело в одну линию, дыши ровно. Нажми «Стоп», когда больше не можешь.';$('tmBar').style.width=Math.min(100,el/120*100)+'%';return}
+  let acc=0,i=0;for(;i<TM.seq.length;i++){if(el<acc+TM.seq[i][1])break;acc+=TM.seq[i][1]}
+  if(i>=TM.seq.length)return tmFinish();
+  if(i!==TM.idx){if(TM.idx>=0)alertPhase();TM.idx=i}
+  const [k,d]=TM.seq[i],ph=PH[k],nx=TM.seq[i+1];
+  $('tmPhase').innerHTML=ph[0]+' <span class="accent">'+ph[1]+'</span>';
+  $('tmBig').textContent=mmss(acc+d-el);
+  $('tmSub').textContent=(TM.seq.length>1?'Интервал '+(i+1)+' из '+TM.seq.length+' · ':'')+(nx?'дальше: '+PH[nx[0]][0].toLowerCase()+' '+mmss(nx[1])+' · ':'')+'всего осталось '+mmss(TM.total-el);
+  $('tmBar').style.width=Math.min(100,el/TM.total*100)+'%';
+}
+function tmClose(){clearInterval(TM.iv);try{wlock&&wlock.release()}catch(e){}wlock=null;$('tmr').classList.remove('show');TM=null}
+function tmFinish(){if(!TM||TM.done)return;TM.done=true;alertPhase();tmClose();
+  const b=snap();const had=rec(view).done.move;rec(view).done.move=true;
+  overlay('Тренировка сделана','Есть <span class="accent">кардио</span>','Засчитано. Тело только что стало чуть выносливее.');
+  if(!had)commit(b);
+}
+$('tmPause').onclick=()=>{if(!TM)return;if(TM.pausedAt){TM.paused+=Date.now()-TM.pausedAt;TM.pausedAt=0;$('tmPause').textContent='Пауза';keepAwake()}else{TM.pausedAt=Date.now();$('tmPause').textContent='Продолжить'}tmTick()};
+$('tmStop').onclick=()=>{if(!TM)return;
+  if(TM.mode==='plank'){const s=Math.floor(tmElapsed());tmClose();$('mP').value=s;toast('Планка: '+s+' секунд. Нажми «Сохранить»');return}
+  if(tmElapsed()>=TM.total*0.8)return tmFinish();
+  if(Date.now()-stopArm>4000){stopArm=Date.now();$('tmStop').textContent='Точно? Не засчитаю';setTimeout(()=>{if(TM)$('tmStop').textContent='Завершить'},4000);return}
+  stopArm=0;tmClose();toast('Тренировка остановлена. Можно начать заново');
+};
+$('plankBtn').onclick=()=>timerOpen('plank');
+document.addEventListener('visibilitychange',()=>{if(TM&&document.visibilityState==='visible'){keepAwake();tmTick()}});
+
+// ---------- карточка для сторис ----------
+function rr(x,X,Y,W,H,R){x.beginPath();x.moveTo(X+R,Y);x.arcTo(X+W,Y,X+W,Y+H,R);x.arcTo(X+W,Y+H,X,Y+H,R);x.arcTo(X,Y+H,X,Y,R);x.arcTo(X,Y,X+W,Y,R);x.closePath()}
+async function drawStory(showW){
+  try{await Promise.all(["900 100px 'Roboto Flex'","200 100px 'Roboto Flex'","700 40px 'Roboto Flex'"].map(f=>document.fonts.load(f)))}catch(e){}
+  const c=document.createElement('canvas');c.width=1080;c.height=1920;const x=c.getContext('2d'),st=stats(),L=level(st.xp);
+  const wide=()=>{try{x.fontStretch='ultra-expanded'}catch(e){}},sp=v=>{if('letterSpacing' in x)x.letterSpacing=v};
+  x.fillStyle='#050507';x.fillRect(0,0,1080,1920);
+  let g=x.createRadialGradient(920,260,0,920,260,1050);g.addColorStop(0,'rgba(200,205,220,.30)');g.addColorStop(1,'rgba(200,205,220,0)');x.fillStyle=g;x.fillRect(0,0,1080,1920);
+  g=x.createRadialGradient(120,1650,0,120,1650,800);g.addColorStop(0,'rgba(200,205,220,.10)');g.addColorStop(1,'rgba(200,205,220,0)');x.fillStyle=g;x.fillRect(0,0,1080,1920);
+  const im=x.getImageData(0,0,1080,1920),dd=im.data;for(let i=0;i<dd.length;i+=4){const n=(Math.random()-.5)*16;dd[i]+=n;dd[i+1]+=n;dd[i+2]+=n}x.putImageData(im,0,0);
+  wide();x.textBaseline='alphabetic';
+  x.font="600 30px 'Roboto Flex'";sp('9px');x.fillStyle='#f4f4f6';x.fillText('LEVEL UP',90,260);
+  const d=parse(TODAY);x.textAlign='right';x.fillStyle='#8a8a94';x.fillText((d.getDate()+' '+MON[d.getMonth()]).toUpperCase(),990,260);x.textAlign='left';
+  x.fillText('УРОВЕНЬ',90,420);
+  sp('0px');x.fillStyle='#ffffff';x.shadowColor='rgba(255,255,255,.4)';x.shadowBlur=70;x.font="900 400px 'Roboto Flex'";x.fillText(String(L.i+1),70,790);
+  let fs=130;x.font=`200 ${fs}px 'Roboto Flex'`;while(x.measureText(L.name).width>900&&fs>50){fs-=4;x.font=`200 ${fs}px 'Roboto Flex'`}
+  const tg=x.createLinearGradient(90,0,990,0);tg.addColorStop(0,'#ffffff');tg.addColorStop(1,'#c9ccd6');x.fillStyle=tg;x.shadowBlur=40;
+  x.save();x.translate(90,930);x.transform(1,0,-0.18,1,0,0);x.fillText(L.name,0,0);x.restore();x.shadowBlur=0;
+  const rows=[['СЕРИЯ',st.streak+' '+dn(st.streak)],['ВСЕГО XP',fmt(st.xp)],['ЗАСЧИТАНО ДНЕЙ',String(Object.keys(S.days).filter(goodDay).length)]];
+  if(showW&&st.lost>=0.1)rows.splice(1,0,['СБРОШЕНО','−'+f1(st.lost)+' кг']);
+  let y=1000;rows.forEach(r=>{rr(x,90,y,900,110,55);x.fillStyle='rgba(255,255,255,.05)';x.fill();x.strokeStyle='rgba(255,255,255,.16)';x.lineWidth=2;x.stroke();
+    x.font="600 24px 'Roboto Flex'";sp('7px');x.fillStyle='#8a8a94';x.fillText(r[0],140,y+66);
+    x.font="800 44px 'Roboto Flex'";sp('1px');x.fillStyle='#ffffff';x.textAlign='right';x.fillText(r[1],940,y+72);x.textAlign='left';y+=128});
+  const cells=28,cw=52,gap=10,ox=90+(900-(14*cw+13*gap))/2,oy=y+20;
+  for(let k=0;k<cells;k++){const ds=addD(TODAY,k-cells+1),cx=ox+(k%14)*(cw+gap),cy=oy+Math.floor(k/14)*(cw+gap);
+    let fill='rgba(255,255,255,.06)';if(ds>=S.start){const p=dayBase(ds)/BASE;fill=p>=1?'#ffffff':p>=.6?'rgba(255,255,255,.7)':p>=.35?'rgba(255,255,255,.42)':p>0?'rgba(255,255,255,.2)':'rgba(255,255,255,.06)'}
+    rr(x,cx,cy,cw,cw,12);x.fillStyle=fill;x.fill()}
+  x.font="600 24px 'Roboto Flex'";sp('7px');x.fillStyle='#8a8a94';x.fillText('ПОСЛЕДНИЕ 4 НЕДЕЛИ',90,oy+2*cw+gap+56);
+  x.font="800 34px 'Roboto Flex'";sp('2px');x.fillStyle='#ffffff';x.textAlign='right';x.fillText('@levelup_fit_bot',990,oy+2*cw+gap+58);x.textAlign='left';
+  return c.toDataURL('image/png');
+}
+let stURL='';
+async function storyRender(){$('stImg').style.opacity=.4;stURL=await drawStory($('stW').checked);$('stImg').src=stURL;$('stImg').style.opacity=1}
+$('storyBtn').onclick=()=>{$('story').classList.add('show');storyRender()};
+$('stW').onchange=storyRender;
+$('stClose').onclick=()=>$('story').classList.remove('show');
+$('stShare').onclick=async()=>{
+  try{const blob=await (await fetch(stURL)).blob(),f=new File([blob],'levelup.png',{type:'image/png'});
+    if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f]});return}}
+  catch(e){if(e&&e.name==='AbortError')return}
+  $('stHint').textContent='Здесь кнопка «Поделиться» не работает. Зажми картинку пальцем, выбери «Сохранить» и выложи её в сторис.';
+};
 
 // ---------- анкета ----------
 let obStep=0;
