@@ -48,6 +48,12 @@
 .light .tm-big{text-shadow:none}
 .light .card{backdrop-filter:none;-webkit-backdrop-filter:none;background:rgba(255,255,255,.7)}
 .light .tabbar{box-shadow:0 10px 30px rgba(0,0,0,.12)}
+/* в светлой теме свечение превращается в серую муть: убираем его везде, цифры и галочки делаем сплошными */
+.light .lvbig{filter:none;background:none;-webkit-text-fill-color:var(--hi);color:var(--hi)}
+.light .fxp{text-shadow:none}
+.light .q.done .chk,.light .opt.on,.light .energy button.on,.light .drops i.on,.light .heat i.l4,.light .lvtrack i,.light .pr b{box-shadow:none;text-shadow:none}
+.light .a.got .ico{box-shadow:none}
+.light .tm-big{text-shadow:none}
 *{margin:0;padding:0;box-sizing:border-box}
 html{-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%;overscroll-behavior:none}
 body{background:var(--bg);color:var(--text);font-family:var(--body);-webkit-font-smoothing:antialiased;overflow-x:hidden;min-height:100dvh}
@@ -790,7 +796,7 @@ input,select{font-size:16px}
 const KEY='levelup.v1';
 // Версия сборки: проставляется скриптом deploy-app.ps1. Телеграм любит показывать старую копию из кэша,
 // поэтому при открытии приложение сверяет версию с сайтом и, если вышла новая, перезагружается.
-const BUILD='20261004-233222';
+const BUILD='20261004-233550';
 async function checkUpdate(){
   if(BUILD==='dev'||location.protocol==='file:')return;
   try{const t=await (await fetch('./?b='+Date.now(),{cache:'no-store'})).text(),m=t.match(/BUILD\s*=\s*'(\d{8}-\d{6})'/);
