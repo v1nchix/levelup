@@ -302,6 +302,15 @@ input,select{font-size:16px}
 .onb-nav .solid{flex:1}
 .profile{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
 [hidden]{display:none!important}
+/* демо и оплата */
+.demo-bar{border-color:rgba(255,255,255,.3);background:rgba(255,255,255,.06)}
+.pl{position:relative}
+.pl>*:not(.plbtn){filter:blur(7px);opacity:.45;pointer-events:none;-webkit-user-select:none;user-select:none}
+.plbtn{display:none}
+.pl .plbtn{display:block;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:2;white-space:nowrap}
+.pricebox{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:22px;padding:16px 18px;border:1px solid rgba(255,255,255,.25);border-radius:16px;background:rgba(255,255,255,.05)}
+.pr b{font-family:var(--wide);font-variation-settings:'wdth' 151,'opsz' 144;font-weight:900;font-size:32px}
+.pr s{color:var(--muted);margin-left:10px;font-size:16px}
 .disc{padding:16px 18px;border:1px solid rgba(255,255,255,.18);border-radius:14px;background:rgba(255,255,255,.04)}
 .disc p{font-size:13px;line-height:1.55;color:var(--muted)}
 .disc p b{color:#fff;font-weight:500}
@@ -360,6 +369,10 @@ input,select{font-size:16px}
     </div>
   </div>
 
+  <div id="demoBar" hidden class="card banner demo-bar" style="margin-bottom:12px">
+    <div><h3 id="demoH">Твой план готов</h3><p class="small" id="demoP" style="margin-top:6px">Это демо: отметь одно любое задание и почувствуй, как растёт XP. Полный доступ открывается после оплаты.</p></div>
+    <button class="btn solid" data-pay>Открыть доступ</button>
+  </div>
   <div id="remBanner" hidden class="card banner" style="margin-bottom:12px">
     <div><h3>Включи напоминания</h3><p class="small" style="margin-top:6px">Бот напомнит, что сегодня по плану, и спасёт серию вечером. Нужно один раз дать согласие в чате с ботом.</p></div>
     <button class="btn solid" id="remGo">Включить</button>
@@ -399,14 +412,14 @@ input,select{font-size:16px}
     <div class="week" id="week"></div>
   </div>
 
-  <div class="sec">
+  <div class="sec" data-pl>
     <span class="tag" id="runTag">Бег</span>
     <h2 id="runH">С нуля до <span class="accent">30 минут</span></h2>
     <p class="lead" id="runLead"></p>
     <div class="table" id="runTable"></div>
   </div>
 
-  <div class="sec">
+  <div class="sec" data-pl>
     <span class="tag">Силовая дома</span>
     <h2 id="strH">Силовая на <span class="accent">форму</span></h2>
     <p class="lead" id="strLead"></p>
@@ -416,7 +429,7 @@ input,select{font-size:16px}
     </div>
   </div>
 
-  <div class="sec">
+  <div class="sec" data-pl>
     <span class="tag">Еда</span>
     <h2>Не диета, а <span class="accent">правила</span></h2>
     <div class="grid2">
@@ -459,6 +472,10 @@ input,select{font-size:16px}
 <!-- ================= ПРОГРЕСС ================= -->
 <section class="screen" id="s-prog">
   <span class="tag">Прогресс</span>
+  <div id="progDemo" hidden class="card banner demo-bar" style="margin-bottom:12px" data-pay>
+    <div><h3>Это пример</h3><p class="small" style="margin-top:6px">Так будет выглядеть твой прогресс через 3 недели: вес по среднему, календарь, награды. Свой откроется после оплаты.</p></div>
+    <button class="btn solid">Открыть доступ</button>
+  </div>
   <div class="card" style="margin-top:4px">
     <h3 style="color:var(--muted)">Сброшено по среднему за неделю</h3>
     <div class="kg" style="margin-top:14px"><b id="kgLost">0,0</b><span class="lead" style="margin:0" id="kgOf"></span></div>
@@ -555,6 +572,25 @@ input,select{font-size:16px}
 
 <div class="toast" id="toast"></div>
 <div class="over" id="over"><div class="card"><span class="tag" id="oTag">Новый уровень</span><h2 id="oTitle"></h2><p class="lead" id="oText" style="margin-left:auto;margin-right:auto"></p><button class="btn solid" id="oBtn">Погнали дальше</button></div></div>
+
+<!-- ================= ОПЛАТА ================= -->
+<div class="over" id="pay"><div class="card ob">
+  <span class="tag">Полный доступ</span>
+  <h2>Открой Level Up <span class="accent">навсегда</span></h2>
+  <p class="lead" id="payLead">Твой план готов. Чтобы отмечать задания, копить XP, держать серию и видеть свой прогресс, открой полный доступ.</p>
+  <ul class="list">
+    <li><b>Все задания и бонусы</b> под твою анкету, каждый день</li>
+    <li><b>Уровни, серии, заморозки и награды</b></li>
+    <li><b>Полный план:</b> кардио на 9 недель, силовая, питание</li>
+    <li><b>Таймер интервалов</b> и секундомер планки</li>
+    <li><b>Прогресс:</b> вес по среднему, календарь, замеры, карточки для сторис</li>
+    <li><b>Напоминания от бота</b> утром и вечером</li>
+  </ul>
+  <div class="pricebox"><div class="pr"><b id="payPrice">699 ₽</b><s id="payOld">999 ₽</s></div><span class="mini" id="paySeats">Цена для первых 50</span></div>
+  <button class="btn solid" id="payBtn" style="width:100%;margin-top:18px">Открыть доступ навсегда</button>
+  <p class="small" style="text-align:center">Один платёж, без подписки. Оплата через ЮKassa. <a href="offer.html" target="_blank" style="color:#fff">Оферта</a></p>
+  <button class="btn" id="payClose" style="width:100%;margin-top:10px">Позже</button>
+</div></div>
 
 <!-- ================= ТАЙМЕР ================= -->
 <div class="over" id="tmr"><div class="card tm">
@@ -695,6 +731,20 @@ const CS=TG&&TG.isVersionAtLeast&&TG.isVersionAtLeast('6.9')?TG.CloudStorage:nul
 const API='https://functions.yandexcloud.net/d4ec38bbqerlda1v5ktp';
 async function api(a,payload){if(!TG)return null;
   try{const r=await fetch(API+'?a='+a,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({initData:TG.initData,...payload})});return await r.json()}catch(e){return null}}
+// доступ: до оплаты демо-режим (анкета, план, одно пробное задание). Статус оплаты знает сервер.
+let PAID=false,OFFER={seats:null,price:699,full:999};
+try{PAID=localStorage.getItem(KEY+'.paid')==='1';OFFER=JSON.parse(localStorage.getItem(KEY+'.offer'))||OFFER}catch(e){}
+const demo=()=>!PAID;
+function gate(){if(PAID)return true;openPay();return false}
+async function checkStatus(){
+  const r=await api('status',{});if(!r||!r.ok)return;
+  OFFER={seats:r.seats,price:r.price,full:r.full};try{localStorage.setItem(KEY+'.offer',JSON.stringify(OFFER))}catch(e){}
+  if(!!r.paid===PAID)return;
+  const was=PAID;PAID=!!r.paid;try{localStorage.setItem(KEY+'.paid',PAID?'1':'0')}catch(e){}
+  if(PAID&&!was){if(S.start<TODAY){S.start=TODAY;view=TODAY}S.trial=null;save();document.getElementById('pay').classList.remove('show');renderAll();
+    overlay('Доступ открыт','Level Up<br><span class="accent">навсегда</span>','Спасибо! Теперь все задания, уровни и прогресс твои. Начинаем день 1.')}
+  else renderAll();
+}
 let syncTimer=null,lastSync='';
 function syncSoon(){if(!TG||!S.setup)return;clearTimeout(syncTimer);syncTimer=setTimeout(syncNow,1500)}
 async function syncNow(){
@@ -704,7 +754,7 @@ async function syncNow(){
   const body=[s.date,Math.min(s.dc,DAY_OK),s.streak,s.fz,s.sex,s.tz,P().run,P().time].join('|');if(body===lastSync)return;
   const r=await api('sync',{s});if(!r)return;
   lastSync=r.ok?body:'';
-  const ban=document.getElementById('remBanner');if(ban)ban.hidden=!(r.need==='consent');
+  const ban=document.getElementById('remBanner');if(ban)ban.hidden=!(r.need==='consent')||demo();
 }
 function haptic(ok){try{if(TG&&TG.HapticFeedback){ok?TG.HapticFeedback.notificationOccurred('success'):TG.HapticFeedback.impactOccurred('light')}}catch(e){}}
 
@@ -712,7 +762,7 @@ function haptic(ok){try{if(TG&&TG.HapticFeedback){ok?TG.HapticFeedback.notificat
 // Данные человека живут только у него: в памяти телефона и в облаке Телеграма.
 const DEFP={sex:'f',inv:[],day:'home',commute:'none',life:[],run:'none',food:[],chrono:'var',time:30};
 function norm(d){d=d&&typeof d==='object'?d:{};
-  const s={start:d.start||TODAY,startWeight:d.startWeight||70,goal:d.goal||62,height:d.height||null,age:d.age||25,setup:!!d.setup,p:d.p||null,days:d.days||{},measures:d.measures||[],ach:d.ach||[]};
+  const s={start:d.start||TODAY,startWeight:d.startWeight||70,goal:d.goal||62,height:d.height||null,age:d.age||25,setup:!!d.setup,p:d.p||null,trial:d.trial||null,days:d.days||{},measures:d.measures||[],ach:d.ach||[]};
   Object.keys(s.days).forEach(k=>{const r=s.days[k]||{};s.days[k]={done:r.done||{},steps:r.steps||0,water:r.water||0,sets:r.sets||0,weight:r.weight||null,energy:r.energy||0,stp:r.stp||0}});
   return s}
 function load(){try{const v=localStorage.getItem(KEY);return v?JSON.parse(v):null}catch(e){return null}}
@@ -727,7 +777,7 @@ const G=(f,m)=>P().sex==='m'?m:f;
 // облако Телеграма: 4096 символов на ключ, дни лежат по месяцам в сжатом виде
 const BITS=['move','body','protein','clean','sleep','bfast','home','walk','stairs','core','night','soda','dog','stop','series','cardio','hang','park'];
 function pack(){
-  const out={cfg:JSON.stringify({start:S.start,startWeight:S.startWeight,goal:S.goal,height:S.height,age:S.age,setup:S.setup,p:S.p,ach:S.ach}),ms:JSON.stringify(S.measures)};
+  const out={cfg:JSON.stringify({start:S.start,startWeight:S.startWeight,goal:S.goal,height:S.height,age:S.age,setup:S.setup,p:S.p,ach:S.ach,trial:S.trial}),ms:JSON.stringify(S.measures)};
   Object.keys(S.days).sort().forEach(ds=>{const r=S.days[ds],k='d_'+ds.slice(0,4)+'_'+ds.slice(5,7);
     let b=0;BITS.forEach((id,i)=>{if(r.done[id])b|=1<<i});
     const row=[b,r.steps||0,r.water||0,r.sets||0,r.weight||0,r.energy||0,r.stp||0];if(row.every(x=>!x))return;
@@ -962,7 +1012,7 @@ function renderToday(){
   $('quests').innerHTML=qs.map(q=>{let ctl='';
     if(!qOpen(q.id)){const lv=Q_UNLOCK[q.id]+1;return `<div class="card q locked" data-lock="${lv}"><div class="chk">${lockSvg}</div><div class="qb"><div class="qh"><h3>${q.t}</h3><span class="xp">УР. ${lv}</span></div><p>Откроется на уровне ${lv}. Собирай XP, и дело добавится в список.</p></div></div>`}
     if(q.id==='move'&&isToday)ctl=`<div class="ctl"><button class="btn solid" data-timer="move">Запустить таймер</button></div>`;
-    if(q.type==='steps')ctl=`<div class="ctl"><input data-steps type="text" inputmode="numeric" enterkeyhint="done" placeholder="0" value="${r.steps||''}" aria-label="Шаги за день"><span class="small" style="margin:0">${r.steps?Math.min(100,Math.round(r.steps/I.steps*100))+'% от цели':''}</span></div>`;
+    if(q.type==='steps')ctl=`<div class="ctl"><input data-steps type="text" inputmode="numeric" enterkeyhint="done" placeholder="0" value="${r.steps||''}" aria-label="Шаги за день" ${demo()?'readonly':''}><span class="small" style="margin:0">${r.steps?Math.min(100,Math.round(r.steps/I.steps*100))+'% от цели':''}</span></div>`;
     if(q.type==='water')ctl=`<div class="ctl"><div class="cnt"><button class="ib" data-w="-1" aria-label="Минус стакан">−</button><b>${r.water||0}</b><button class="ib" data-w="1" aria-label="Плюс стакан">+</button></div><div class="drops">${Array.from({length:8},(_,i)=>`<i class="${i<(r.water||0)?'on':''}"></i>`).join('')}</div></div>`;
     return qCard({...q,typed:!!q.type},isDone(view,q),ctl);
   }).join('');
@@ -976,7 +1026,9 @@ function renderToday(){
     b+=`<div class="card q bonus locked" data-lock="${lv}"><div class="chk">${lockSvg}</div><div class="qb"><div class="qh"><h3>Ещё ${BI.length-nOpen} ${BI.length-nOpen===1?'бонус':BI.length-nOpen<5?'бонуса':'бонусов'}</h3><span class="xp">УР. ${lv}</span></div><p>Следующий, «${nx.t}», откроется на уровне ${lv}. Остальные на следующих уровнях.</p></div></div>`}
   $('bonus').innerHTML=b;
 
-  $('wIn').value=r.weight?f1(r.weight):'';
+  $('wIn').value=r.weight?f1(r.weight):'';$('wIn').readOnly=demo();
+  $('demoBar').hidden=!demo();if(demo())$('remBanner').hidden=true;
+  if(S.trial){$('demoH').textContent='Пробное задание засчитано';$('demoP').textContent='Понравилось? Открой полный доступ: все задания, уровни, серия и прогресс.'}
   const W=weights(),a=W.length?avg7(W,view):null;$('wNote').textContent=a?'среднее за 7 дней: '+f1(a)+' кг':'';
   $('energy').innerHTML=[1,2,3,4,5].map(n=>`<button class="${r.energy===n?'on':''}" data-e="${n}" aria-label="Энергия ${n}">${n}</button>`).join('');
 }
@@ -1034,7 +1086,16 @@ function renderPlan(){
     'Level Up не заменяет врача и не ставит диагнозов. Это игра, которая помогает держать режим.'].map(x=>'<li>'+x+'</li>').join('');
 }
 
+// в демо прогресс показан на примере: 3 недели игры с цифрами человека
+function sampleS(){
+  const s=norm({start:addD(TODAY,-20),startWeight:S.startWeight,goal:S.goal,height:S.height,age:S.age,setup:true,p:S.p});
+  for(let k=20;k>=0;k--){if(k===13||k===6)continue;const done={move:true,protein:true};if(k%2)done.body=true;if(k%3)done.clean=true;if(k%4)done.sleep=true;
+    s.days[addD(TODAY,-k)]={done,steps:5200+(k*937)%3000,water:6,sets:k%4,weight:k%3===0?Math.round((S.startWeight-(20-k)*0.08)*10)/10:null,energy:3,stp:0}}
+  return s}
 function renderProg(){
+  $('progDemo').hidden=!demo();
+  if(demo()&&S.setup){const real=S;S=sampleS();try{renderProgCore()}finally{S=real}}else renderProgCore()}
+function renderProgCore(){
   const st=stats(),total=Math.max(.1,S.startWeight-S.goal);
   $('kgLost').textContent=f1(st.lost);$('kgOf').textContent='из '+f1(total)+' кг'+(st.cur?' · сейчас '+f1(st.cur):'');
   $('kgBar').style.width=Math.min(100,st.lost/total*100)+'%';
@@ -1085,7 +1146,26 @@ function renderMe(){
   const chips=[LBL.sex[p.sex],...txt('day'),...txt('commute'),p.time+' мин в день',...txt('run'),...txt('chrono'),...txt('inv'),...txt('life'),...txt('food')];
   $('profile').innerHTML=S.p?chips.map(c=>`<span class="mini">${c}</span>`).join(''):'';
 }
-function renderAll(){LI=level(stats().xp).i;renderToday();renderPlan();renderProg();renderMe()}
+function applyLocks(){document.querySelectorAll('[data-pl]').forEach(el=>{
+  if(!el.querySelector('.plbtn')){const b=document.createElement('button');b.className='btn solid plbtn';b.textContent='Открыть после оплаты';el.appendChild(b)}
+  el.classList.toggle('pl',demo())})}
+function renderAll(){LI=level(stats().xp).i;renderToday();renderPlan();renderProg();renderMe();applyLocks()}
+function openPay(afterTrial){
+  const promo=OFFER.seats==null||OFFER.seats>0;
+  $('payPrice').textContent=(promo?699:(OFFER.full||999))+' ₽';$('payOld').hidden=!promo;
+  $('paySeats').textContent=promo?(OFFER.seats!=null?'Осталось '+OFFER.seats+' из 50 мест по этой цене':'Цена для первых 50'):'Доступ навсегда';
+  $('payLead').textContent=afterTrial?'Есть первая галочка! Так выглядит каждый день в Level Up: дела, XP, серия и уровни. Открой полный доступ и продолжай.':'Твой план готов. Чтобы отмечать задания, копить XP, держать серию и видеть свой прогресс, открой полный доступ.';
+  $('pay').classList.add('show');haptic(false);
+}
+$('payClose').onclick=()=>$('pay').classList.remove('show');
+$('payBtn').onclick=async()=>{
+  if(!TG){toast('Открой Level Up кнопкой в боте @levelup_fit_bot');return}
+  const b=$('payBtn');b.disabled=true;b.textContent='Секунду…';
+  const r=await api('pay',{});
+  b.disabled=false;b.textContent='Открыть доступ навсегда';
+  if(r&&r.url){try{TG.openLink(r.url)}catch(e){location.href=r.url}}
+  else toast('Оплата подключается. Совсем скоро здесь можно будет открыть доступ');
+};
 
 // ---------- обратная связь ----------
 let tt;
@@ -1112,10 +1192,13 @@ function commit(before){
 
 // ---------- действия ----------
 document.addEventListener('click',e=>{
-  if(e.target.closest('#onb,#tmr,#story'))return;
-  const tb=e.target.closest('[data-timer]');if(tb){timerOpen('move');return}
+  if(e.target.closest('#onb,#tmr,#story,#pay'))return;
+  if(e.target.closest('.plbtn,[data-pay]')){openPay();return}
+  const tb=e.target.closest('[data-timer]');if(tb){if(gate())timerOpen('move');return}
   const lk=e.target.closest('[data-lock]');if(lk){toast('Откроется на уровне '+lk.dataset.lock+'. Собирай XP');return}
+  if(demo()&&e.target.closest('[data-steps],#wIn')){e.target.blur();openPay();return}
   const w=e.target.closest('[data-w]'),s=e.target.closest('[data-s]'),en=e.target.closest('[data-e]'),p=e.target.closest('[data-p]');
+  if((w||s||p||en)&&!gate())return;
   if(w||s||p){const b=snap(),r=rec(view);
     if(p){const v=+p.dataset.p;r.stp=Math.max(0,(r.stp||0)+v);if(v>0&&r.stp<=9)toast(r.stp*10+' минут на степпере. '+rnd(PRAISE()),6)}
     else if(w){const was=r.water;r.water=Math.max(0,Math.min(12,(r.water||0)+ +w.dataset.w));if(was<6&&r.water>=6)toast('Вода на сегодня есть',10)}
@@ -1125,9 +1208,12 @@ document.addEventListener('click',e=>{
   const q=e.target.closest('.q[data-q]');
   if(q&&!q.hasAttribute('data-typed')&&!e.target.closest('input,button')){
     const b=snap(),r=rec(view),id=q.dataset.q,qq=quests(view).concat(bonuses()).find(x=>x.id===id);if(!qq)return;
+    // демо: одно пробное задание можно отметить, потом экран оплаты
+    if(demo()){if(S.trial){openPay();return}S.trial=id}
     r.done[id]=!r.done[id];
     if(r.done[id])toast(rnd(PRAISE()),qq.xp);
     commit(b);const el=document.querySelector(`.q[data-q="${id}"]`);if(el&&r.done[id])el.classList.add('pop');
+    if(demo())setTimeout(()=>openPay(true),1800);
   }
 });
 document.addEventListener('change',e=>{
@@ -1136,10 +1222,10 @@ document.addEventListener('change',e=>{
   if(e.target.id==='wIn'){const b=snap(),v=num(e.target.value);rec(view).weight=v&&v>30&&v<250?v:null;if(rec(view).weight)toast('Вес записан. Смотрим на среднее');commit(b)}
 });
 document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.matches('input'))e.target.blur()});
-$('dprev').onclick=()=>{if(view>S.start){view=addD(view,-1);renderToday()}};
+$('dprev').onclick=()=>{if(!gate())return;if(view>S.start){view=addD(view,-1);renderToday()}};
 $('dnext').onclick=()=>{if(view<TODAY){view=addD(view,1);renderToday()}};
 
-$('mAdd').onclick=()=>{const mm={d:TODAY,w:num($('mW').value),h:num($('mH').value),p:num($('mP').value)};if(!mm.w&&!mm.h&&!mm.p)return;
+$('mAdd').onclick=()=>{if(!gate())return;const mm={d:TODAY,w:num($('mW').value),h:num($('mH').value),p:num($('mP').value)};if(!mm.w&&!mm.h&&!mm.p)return;
   const b=snap();S.measures=S.measures.filter(x=>x.d!==TODAY);S.measures.push(mm);S.measures.sort((a,c)=>a.d<c.d?-1:1);$('mW').value=$('mH').value=$('mP').value='';toast('Замер сохранён');commit(b)};
 $('pSave').onclick=()=>{const h=num($('pH').value),w=num($('pW').value),g=num($('pG').value),a=num($('pA').value),s=$('pS').value;
   S.height=h&&h>120&&h<230?h:S.height;if(w)S.startWeight=w;if(g)S.goal=g;if(a)S.age=a;if(s&&s<=TODAY)S.start=s;if(view<S.start)view=S.start;save();renderAll();toast('Сохранено. План пересчитан')};
@@ -1198,7 +1284,7 @@ $('tmStop').onclick=()=>{if(!TM)return;
   if(Date.now()-stopArm>4000){stopArm=Date.now();$('tmStop').textContent='Точно? Не засчитаю';setTimeout(()=>{if(TM)$('tmStop').textContent='Завершить'},4000);return}
   stopArm=0;tmClose();toast('Тренировка остановлена. Можно начать заново');
 };
-$('plankBtn').onclick=()=>timerOpen('plank');
+$('plankBtn').onclick=()=>{if(gate())timerOpen('plank')};
 document.addEventListener('visibilitychange',()=>{if(TM&&document.visibilityState==='visible'){keepAwake();tmTick()}});
 
 // ---------- карточка для сторис ----------
@@ -1242,7 +1328,7 @@ $('stSend').onclick=async()=>{
   if(r&&r.ok){toast('Картинка в чате с ботом');$('story').classList.remove('show')}
   else $('stHint').textContent='Не получилось отправить. Зажми картинку пальцем и сохрани её.';
 };
-$('storyBtn').onclick=()=>{$('story').classList.add('show');storyRender()};
+$('storyBtn').onclick=()=>{if(!gate())return;$('story').classList.add('show');storyRender()};
 $('stW').onchange=storyRender;
 $('stClose').onclick=()=>$('story').classList.remove('show');
 $('stShare').onclick=async()=>{
@@ -1315,14 +1401,14 @@ function checkSetup(){if(!S.setup)obOpen()}
   }catch(e){cloudReady=true;setSync('Облако Телеграма не ответило. Прогресс пока в памяти телефона.')}
 })();
 if(S.start>TODAY)S.start=TODAY;
-saveLocal();renderAll();checkSetup();syncSoon();
+saveLocal();renderAll();checkSetup();syncSoon();checkStatus();
 $('remGo').onclick=()=>{try{TG.openTelegramLink('https://t.me/levelup_fit_bot?start=reminders');TG.close()}catch(e){}};
 let delArm=0;
 $('delSrv').onclick=async()=>{const b=$('delSrv');
   if(Date.now()-delArm>4000){delArm=Date.now();b.textContent='Точно? Нажми ещё раз';setTimeout(()=>{b.textContent='Удалить мои данные с сервера'},4000);return}
   delArm=0;b.textContent='Удалить мои данные с сервера';
   const r=await api('delete',{});toast(r&&r.ok?'Данные на сервере удалены, напоминания выключены':'Не получилось. Напиши боту команду /delete');lastSync='__deleted__'};
-document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')syncSoon()});
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){syncSoon();checkStatus()}});
 </script>
 </body>
 </html>
