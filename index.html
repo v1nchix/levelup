@@ -598,7 +598,8 @@ input,select{font-size:16px}
       <h3>Тема и звук</h3>
       <p class="small" style="margin-top:6px">Быстро переключить можно кнопками вверху экрана.</p>
       <div class="opts" id="themeOpts" style="margin-top:14px"><button class="opt" data-theme="auto">Как в Телеграме</button><button class="opt" data-theme="dark">Тёмная</button><button class="opt" data-theme="light">Светлая</button></div>
-      <div class="opts" id="soundOpts" style="margin-top:8px"><button class="opt" data-sound="game">Звуки: игровые</button><button class="opt" data-sound="soft">Звуки: мягкие</button><button class="opt" data-sound="off">Без звука</button></div>
+      <div class="opts" id="soundOpts" style="margin-top:8px"><button class="opt" data-sound="glass">Звуки: стекло</button><button class="opt" data-sound="game">Звуки: 8-бит</button><button class="opt" data-sound="off">Без звука</button></div>
+      <div class="opts" style="margin-top:8px"><button class="opt" data-try="tick">▶ Галочка</button><button class="opt" data-try="day">▶ День засчитан</button><button class="opt" data-try="win">▶ Новый уровень</button></div>
     </div>
   </div>
   <div class="card" style="margin-top:14px">
@@ -673,6 +674,7 @@ input,select{font-size:16px}
 <div class="over" id="story"><div class="card ob">
   <span class="tag">Сторис</span>
   <h2>Похвастаться <span class="accent">прогрессом</span></h2>
+  <div class="opts" id="stVar" style="margin-top:18px"><button class="opt on" data-sv="a">Итог дня</button><button class="opt" data-sv="b">Серия</button><button class="opt" data-sv="c">Минимал</button></div>
   <img id="stImg" class="st-img" alt="Карточка прогресса Level Up">
   <label class="st-tg" for="stW"><input type="checkbox" id="stW"> Показывать сброшенный вес</label>
   <p class="small" id="stHint">Бот пришлёт картинку в чат: оттуда её легко сохранить или переслать в сторис.</p>
@@ -777,7 +779,7 @@ input,select{font-size:16px}
 const KEY='levelup.v1';
 // Версия сборки: проставляется скриптом deploy-app.ps1. Телеграм любит показывать старую копию из кэша,
 // поэтому при открытии приложение сверяет версию с сайтом и, если вышла новая, перезагружается.
-const BUILD='20261004-231158';
+const BUILD='20261004-231724';
 async function checkUpdate(){
   if(BUILD==='dev'||location.protocol==='file:')return;
   try{const t=await (await fetch('./?b='+Date.now(),{cache:'no-store'})).text(),m=t.match(/BUILD\s*=\s*'(\d{8}-\d{6})'/);
@@ -828,8 +830,8 @@ document.getElementById('themeBtn').onclick=()=>{setTheme(isLight()?'dark':'ligh
 applyTheme();
 
 // звуки: короткие синтезированные сигналы, без файлов. Два набора: игровые (8-бит) и мягкие.
-let SNDMODE='game';try{const v=localStorage.getItem(KEY+'.sound');if(v==='0'||v==='off')SNDMODE='off';else if(v==='soft')SNDMODE='soft'}catch(e){}
-let SND=SNDMODE!=='off',LASTMODE=SNDMODE==='off'?'game':SNDMODE;
+let SNDMODE='glass';try{const v=localStorage.getItem(KEY+'.sound');if(v==='0'||v==='off')SNDMODE='off';else if(v==='game')SNDMODE='game'}catch(e){}
+let SND=SNDMODE!=='off',LASTMODE=SNDMODE==='off'?'glass':SNDMODE;
 let AC=null;
 function audio(){try{if(!AC)AC=new (window.AudioContext||window.webkitAudioContext)();if(AC.state!=='running')AC.resume()}catch(e){AC=null}return AC}
 // телефоны разрешают звук только после касания: при первом касании «будим» звук тихим пустым сигналом
@@ -839,7 +841,33 @@ function unlockAudio(){const a=audio();if(!a)return;try{const b=a.createBuffer(1
 function tone(f,start,dur,vol,type){const a=audio();if(!a)return;const o=a.createOscillator(),g=a.createGain(),t=a.currentTime+start;
   o.type=type||'sine';o.frequency.setValueAtTime(f,t);g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+.012);g.gain.exponentialRampToValueAtTime(.0001,t+dur);
   o.connect(g);g.connect(a.destination);o.start(t);o.stop(t+dur+.02)}
+// «Стекло» в духе системных звуков iPhone: колокольчик (FM-синтез) с мягким эхом и тихий щелчок клавиатуры
+let REV=null;
+function reverb(a){if(REV)return REV;const len=Math.floor(a.sampleRate*1.4),b=a.createBuffer(2,len,a.sampleRate);
+  for(let ch=0;ch<2;ch++){const d=b.getChannelData(ch);for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/len,3.2)}
+  const cv=a.createConvolver(),wet=a.createGain();cv.buffer=b;wet.gain.value=.2;cv.connect(wet);wet.connect(a.destination);REV=cv;return cv}
+function bell(f,start,dur,vol){const a=audio();if(!a)return;const t=a.currentTime+start;
+  const env=a.createGain();env.gain.setValueAtTime(0,t);env.gain.linearRampToValueAtTime(vol,t+.005);env.gain.exponentialRampToValueAtTime(.0001,t+dur);
+  const lp=a.createBiquadFilter();lp.type='lowpass';lp.frequency.value=6500;lp.Q.value=.3;
+  const car=a.createOscillator(),mod=a.createOscillator(),mg=a.createGain();car.type=mod.type='sine';car.frequency.value=f;mod.frequency.value=f*3.5;
+  mg.gain.setValueAtTime(f*.9,t);mg.gain.exponentialRampToValueAtTime(1,t+dur*.5);mod.connect(mg);mg.connect(car.frequency);
+  const oct=a.createOscillator(),og=a.createGain();oct.type='sine';oct.frequency.value=f*2;og.gain.setValueAtTime(vol*.18,t);og.gain.exponentialRampToValueAtTime(.0001,t+dur*.45);
+  car.connect(env);env.connect(lp);oct.connect(og);og.connect(lp);lp.connect(a.destination);lp.connect(reverb(a));
+  [car,mod,oct].forEach(o=>{o.start(t);o.stop(t+dur+.05)})}
+function tap(start,vol,freq){const a=audio();if(!a)return;const t=a.currentTime+start,len=Math.floor(a.sampleRate*.028),b=a.createBuffer(1,len,a.sampleRate),d=b.getChannelData(0);
+  for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/len,5);
+  const s=a.createBufferSource(),bp=a.createBiquadFilter(),g=a.createGain();s.buffer=b;bp.type='bandpass';bp.frequency.value=freq||2600;bp.Q.value=1.4;g.gain.value=vol;
+  s.connect(bp);bp.connect(g);g.connect(a.destination);s.start(t)}
+function chord(fs,start,dur,vol){const a=audio();if(!a)return;const t=a.currentTime+start;fs.forEach(f=>{const o=a.createOscillator(),g=a.createGain();o.type='sine';o.frequency.value=f;
+  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+.25);g.gain.exponentialRampToValueAtTime(.0001,t+dur);o.connect(g);g.connect(a.destination);g.connect(reverb(a));o.start(t);o.stop(t+dur+.05)})}
 const SETS={
+  glass:{
+    tick:()=>{bell(1568,0,.55,.085);bell(2093,.085,.8,.075)},                       // галочка: два стеклянных «динь» вверх
+    untick:()=>{tap(0,.22,1300)},                                                     // снять галочку: глухой тап
+    pop:()=>{tap(0,.3,2700)},                                                         // плюсики и переключатели: щелчок клавиатуры
+    day:()=>{bell(1047,0,.7,.06);bell(1319,.1,.7,.06);bell(1568,.2,1,.07)},          // день засчитан
+    win:()=>{bell(1047,0,.9,.055);bell(1319,.09,.9,.055);bell(1568,.18,1,.06);bell(2093,.3,1.5,.07);chord([523,659,784],.25,1.6,.018)} // уровень, награда
+  },
   game:{ // 8-бит, как в старых играх: «монетка» за галочку, фанфара за уровень
     tick:()=>{tone(988,0,.08,.06,'square');tone(1319,.07,.32,.06,'square')},
     untick:()=>{tone(392,0,.07,.05,'square');tone(262,.06,.12,.05,'square')},
@@ -847,13 +875,6 @@ const SETS={
     day:()=>{[523,659,784,1047].forEach((f,i)=>tone(f,i*.075,.16,.055,'square'))},
     win:()=>{[523,659,784,1047,784,1047].forEach((f,i)=>tone(f,i*.085,.15,.055,'square'));tone(1568,.52,.55,.06,'square');tone(262,.52,.55,.07,'triangle')}
   },
-  soft:{ // мягкие, как маримба: короткая нота с обертоном
-    tick:()=>{tone(659,0,.35,.14);tone(2636,0,.12,.03);tone(988,.09,.4,.11)},
-    untick:()=>{tone(330,0,.25,.1)},
-    pop:()=>{tone(523,0,.18,.08);tone(2093,0,.06,.02)},
-    day:()=>{[523,659,784].forEach((f,i)=>{tone(f,i*.11,.45,.11);tone(f*4,i*.11,.1,.02)})},
-    win:()=>{[523,659,784,1047].forEach((f,i)=>{tone(f,i*.12,.6,.1);tone(f*4,i*.12,.1,.02)});tone(1319,.5,.9,.08)}
-  }
 };
 function sfx(n){const set=SETS[SNDMODE];if(SND&&set&&set[n])try{set[n]()}catch(e){}}
 function vib(kind){try{if(!TG||!TG.HapticFeedback)return;const h=TG.HapticFeedback;
@@ -861,7 +882,8 @@ function vib(kind){try{if(!TG||!TG.HapticFeedback)return;const h=TG.HapticFeedba
 function applySound(){document.documentElement.classList.toggle('mute',!SND);document.querySelectorAll('#soundOpts .opt').forEach(o=>o.classList.toggle('on',o.dataset.sound===SNDMODE))}
 function setSound(mode){SNDMODE=mode;SND=mode!=='off';if(SND)LASTMODE=mode;try{localStorage.setItem(KEY+'.sound',mode)}catch(e){}applySound();if(SND)sfx('tick')}
 document.getElementById('sndBtn').onclick=()=>{setSound(SND?'off':LASTMODE);vib('select')};
-document.addEventListener('click',e=>{const s=e.target.closest('[data-sound]');if(s)setSound(s.dataset.sound)});
+document.addEventListener('click',e=>{const s=e.target.closest('[data-sound]');if(s)setSound(s.dataset.sound);
+  const tr=e.target.closest('[data-try]');if(tr){const set=SETS[SND?SNDMODE:LASTMODE];audio();if(set&&set[tr.dataset.try])set[tr.dataset.try]()}});
 // анимации награды: всплывающие +XP и конфетти в цветах темы
 const calm=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
 function floatXP(el,xp){if(!el||!xp||calm())return;const r=el.getBoundingClientRect(),s=document.createElement('span');
@@ -1445,74 +1467,79 @@ document.addEventListener('visibilitychange',()=>{if(TM&&document.visibilityStat
 
 // ---------- карточка для сторис ----------
 function rr(x,X,Y,W,H,R){x.beginPath();x.moveTo(X+R,Y);x.arcTo(X+W,Y,X+W,Y+H,R);x.arcTo(X+W,Y+H,X,Y+H,R);x.arcTo(X,Y+H,X,Y,R);x.arcTo(X,Y,X+W,Y,R);x.closePath()}
-// Карточка 1080×1920 в стиле приложения. Всё важное внутри безопасной зоны сторис (сверху 200, снизу 220 px перекрывает интерфейс Инстаграма).
-async function drawStory(showW){
-  const WF=(w,s,it)=>`${it?'italic ':''}ultra-expanded ${w} ${s}px 'Roboto Flex', sans-serif`;  // широкий срез, как в приложении
-  try{await Promise.all([WF(900,100),WF(800,100),WF(600,40),WF(200,100,1),WF(200,100)].map(f=>document.fonts.load(f)))}catch(e){}
-  const c=document.createElement('canvas');c.width=1080;c.height=1920;const x=c.getContext('2d'),st=stats(),L=level(st.xp),lt=isLight();
-  const C=lt?{bg:'#f2f2f4',fg:'#0b0b0f',mut:'#6a6a73',ink:'11,11,15',g1:'#0b0b0f',g2:'#5d606b',glow:'rgba(150,155,175,.30)',pill:'#0b0b0f',pillT:'#ffffff'}
-             :{bg:'#050507',fg:'#f4f4f6',mut:'#8a8a94',ink:'255,255,255',g1:'#ffffff',g2:'#b9bcc8',glow:'rgba(200,205,220,.26)',pill:'#ffffff',pillT:'#000000'};
-  const ink=a=>`rgba(${C.ink},${a})`;
-  try{x.fontStretch='ultra-expanded'}catch(e){}
-  x.textBaseline='alphabetic';
-  // разрядка вручную: свойство letterSpacing есть не во всех браузерах
-  const spaced=(t,X,Y,sp,align)=>{const w=[...t].reduce((a,ch)=>a+x.measureText(ch).width+sp,-sp);let cx=align==='right'?X-w:X;[...t].forEach(ch=>{x.fillText(ch,cx,Y);cx+=x.measureText(ch).width+sp});return w};
-  const M=96,R=1080-M,Wd=R-M;
+// Карточки 1080×1920 для сторис, три варианта на выбор. Всё важное внутри безопасной зоны
+// (сверху 200, снизу 220 px перекрывает интерфейс Инстаграма). Цвета под текущую тему.
+async function drawStory(v,showW){
+  const WF=(w,s,it)=>`${it?'italic ':''}ultra-expanded ${w} ${s}px 'Roboto Flex', sans-serif`;
+  try{await Promise.all([WF(900,100),WF(800,100),WF(700,40),WF(600,30),WF(200,100,1),'500 30px Manrope'].map(f=>document.fonts.load(f)))}catch(e){}
+  const c=document.createElement('canvas');c.width=1080;c.height=1920;const x=c.getContext('2d'),lt=isLight();
+  const P=lt?{bg:'#f2f2f4',fg:'#0b0b0f',mut:'#6a6a73',dim:'#a2a2ab',ink:'11,11,15',g1:'#0b0b0f',g2:'#5d606b',glow:'rgba(150,155,175,.30)',pill:'#0b0b0f',pillT:'#fff'}
+             :{bg:'#050507',fg:'#f4f4f6',mut:'#8a8a94',dim:'#55555e',ink:'255,255,255',g1:'#ffffff',g2:'#b9bcc8',glow:'rgba(200,205,220,.22)',pill:'#ffffff',pillT:'#000'};
+  const ink=a=>`rgba(${P.ink},${a})`,M=96,Wd=888;
+  try{x.fontStretch='ultra-expanded'}catch(e){}x.textBaseline='alphabetic';
+  const sp=(t,X,Y,s,al)=>{const w=[...t].reduce((a,ch)=>a+x.measureText(ch).width+s,-s);let cx=al==='right'?X-w:al==='center'?X-w/2:X;[...t].forEach(ch=>{x.fillText(ch,cx,Y);cx+=x.measureText(ch).width+s});return w};
+  const accent=(t,X,Y,size,al)=>{x.font=WF(200,size,1);let s=size;while(x.measureText(t).width>Wd&&s>40){s-=4;x.font=WF(200,s,1)}const w=x.measureText(t).width,x0=al==='center'?X-w/2:X;
+    const g=x.createLinearGradient(x0,0,x0+w,0);g.addColorStop(0,P.g1);g.addColorStop(1,P.g2);x.fillStyle=g;x.save();x.translate(x0,Y);x.transform(1,0,-.16,1,0,0);x.fillText(t,0,0);x.restore()};
+  const glow=on=>{if(!lt&&on){x.shadowColor='rgba(255,255,255,.4)';x.shadowBlur=26}else x.shadowBlur=0};
 
-  // фон: тёмный с мягким пятном света
-  x.fillStyle=C.bg;x.fillRect(0,0,1080,1920);
-  let g=x.createRadialGradient(880,320,0,880,320,1000);g.addColorStop(0,C.glow);g.addColorStop(1,'rgba(0,0,0,0)');x.fillStyle=g;x.fillRect(0,0,1080,1920);
-  g=x.createRadialGradient(260,700,0,260,700,560);g.addColorStop(0,lt?'rgba(150,155,175,.14)':'rgba(200,205,220,.10)');g.addColorStop(1,'rgba(0,0,0,0)');x.fillStyle=g;x.fillRect(0,0,1080,1920);
+  // данные
+  const st=stats(),L=level(st.xp),I=info(TODAY),oq=openQuests(TODAY),done=oq.filter(q=>isDone(TODAY,q)).length,d=parse(TODAY);
+  const lvl=ds=>{if(ds<S.start||ds>TODAY)return -1;const p=dayBase(ds)/BASE;return p>=1?1:p>=.6?.75:p>=.35?.5:p>0?.28:0};
+  const lost=showW&&st.lost>=0.1?'−'+f1(st.lost)+' кг':null;
 
-  // шапка
-  x.font=WF(700,30);x.fillStyle=C.fg;spaced('LEVEL UP',M,232,10);
-  const d=parse(TODAY);x.font=WF(600,24);x.fillStyle=C.mut;spaced((d.getDate()+' '+MON[d.getMonth()]).toUpperCase(),R,230,7,'right');
-  x.fillStyle=ink(.12);x.fillRect(M,262,Wd,2);
+  // фон и шапка
+  x.fillStyle=P.bg;x.fillRect(0,0,1080,1920);
+  const bg=x.createRadialGradient(860,360,0,860,360,980);bg.addColorStop(0,P.glow);bg.addColorStop(1,'rgba(0,0,0,0)');x.fillStyle=bg;x.fillRect(0,0,1080,1920);
+  x.font=WF(700,28);x.fillStyle=P.fg;sp('LEVEL UP',M,236,10);
+  x.font=WF(600,22);x.fillStyle=P.mut;sp((d.getDate()+' '+MON[d.getMonth()]).toUpperCase(),M+Wd,234,7,'right');
+  const footer=y=>{const t='@levelup_fit_bot';x.font=WF(800,26);const w=[...t].reduce((a,ch)=>a+x.measureText(ch).width+2,-2)+60;
+    rr(x,540-w/2,y,w,68,34);x.fillStyle=P.pill;x.fill();x.fillStyle=P.pillT;sp(t,540,y+44,2,'center')};
 
-  // уровень: огромная цифра и название
-  x.font=WF(600,26);x.fillStyle=C.mut;spaced('УРОВЕНЬ',M,372,12);
-  let ns=520;x.font=WF(900,ns);while(x.measureText(String(L.i+1)).width>Wd&&ns>200){ns-=20;x.font=WF(900,ns)}
-  g=x.createLinearGradient(0,400,0,780);g.addColorStop(0,C.g1);g.addColorStop(1,C.g2);
-  x.fillStyle=g;if(!lt){x.shadowColor='rgba(255,255,255,.28)';x.shadowBlur=90}x.fillText(String(L.i+1),M-14,770);x.shadowBlur=0;
-  let fs=118;x.font=WF(200,fs,1);while(x.measureText(L.name).width>Wd&&fs>56){fs-=4;x.font=WF(200,fs,1)}
-  g=x.createLinearGradient(M,0,R,0);g.addColorStop(0,C.g1);g.addColorStop(1,C.g2);x.fillStyle=g;
-  x.save();x.translate(M,880);x.transform(1,0,-0.16,1,0,0);x.fillText(L.name,0,0);x.restore();
-
-  // полоса до следующего уровня
-  const pr=L.to?(st.xp-L.from)/(L.to-L.from):1;
-  x.font=WF(600,22);x.fillStyle=C.mut;spaced(L.to?'ДО УРОВНЯ '+(L.i+2):'МАКСИМАЛЬНЫЙ УРОВЕНЬ',M,948,7);
-  if(L.to)spaced(fmt(st.xp-L.from)+' / '+fmt(L.to-L.from)+' XP',R,948,5,'right');
-  rr(x,M,968,Wd,22,11);x.fillStyle=ink(.1);x.fill();
-  rr(x,M,968,Math.max(22,Wd*pr),22,11);g=x.createLinearGradient(M,0,M+Wd,0);g.addColorStop(0,C.g2);g.addColorStop(1,C.g1);x.fillStyle=g;
-  if(!lt){x.shadowColor='rgba(255,255,255,.5)';x.shadowBlur=24}x.fill();x.shadowBlur=0;
-
-  // четыре плашки с цифрами
-  const days=Object.keys(S.days).filter(goodDay).length;
-  const cards=[['СЕРИЯ',String(st.streak),dn(st.streak)],['ВСЕГО XP',fmt(st.xp),''],['ЗАСЧИТАНО',String(days),dn(days)],
-    showW&&st.lost>=0.1?['СБРОШЕНО','−'+f1(st.lost),'кг']:['ИДЕАЛЬНЫХ',String(st.perfect),dn(st.perfect)]];
-  const cw=(Wd-24)/2,ch=186;
-  cards.forEach((cd,i)=>{const cx=M+(i%2)*(cw+24),cy=1030+Math.floor(i/2)*(ch+24);
-    rr(x,cx,cy,cw,ch,34);x.fillStyle=ink(lt?.05:.045);x.fill();x.strokeStyle=ink(.14);x.lineWidth=2;x.stroke();
-    x.font=WF(600,21);x.fillStyle=C.mut;spaced(cd[0],cx+34,cy+56,7);
-    let vs=78;x.font=WF(900,vs);while(x.measureText(cd[1]).width>cw-68-(cd[2]?110:0)&&vs>40){vs-=4;x.font=WF(900,vs)}
-    x.fillStyle=C.fg;x.fillText(cd[1],cx+34,cy+150);
-    if(cd[2]){const vw=x.measureText(cd[1]).width;x.font=`500 30px Manrope, sans-serif`;x.fillStyle=C.mut;x.fillText(cd[2],cx+34+vw+14,cy+148)}});
-
-  // календарь последних 4 недель
-  const gy=1490;x.font=WF(600,21);x.fillStyle=C.mut;spaced('ПОСЛЕДНИЕ 4 НЕДЕЛИ',M,gy,7);
-  const cs=52,gp=(Wd-14*cs)/13;
-  for(let k=0;k<28;k++){const ds=addD(TODAY,k-27),cx=M+(k%14)*(cs+gp),cy=gy+24+Math.floor(k/14)*(cs+gp);
-    let a=.07;if(ds>=S.start){const p=dayBase(ds)/BASE;a=p>=1?1:p>=.6?.72:p>=.35?.45:p>0?.22:.07}
-    rr(x,cx,cy,cs,cs,13);x.fillStyle=ink(a);x.fill()}
-
-  // подпись внизу, выше зоны ответа в сторис
-  const py=1652,pt='@levelup_fit_bot';x.font=WF(800,28);const pw=[...pt].reduce((a,ch)=>a+x.measureText(ch).width+2,-2)+64;
-  rr(x,M,py,pw,72,36);x.fillStyle=C.pill;x.fill();x.fillStyle=C.pillT;spaced(pt,M+32,py+47,2);
-  x.font=WF(600,21);x.fillStyle=C.mut;spaced('ИГРАЮ В ФОРМУ',R,py+44,7,'right');
+  if(v==='a'){ // итог дня: кольцо и список дел
+    const cx=540,cy=610,r=240;x.lineCap='round';x.lineWidth=46;x.strokeStyle=ink(.08);x.beginPath();x.arc(cx,cy,r,0,7);x.stroke();
+    if(done){const g=x.createLinearGradient(cx-r,cy-r,cx+r,cy+r);g.addColorStop(0,P.g2);g.addColorStop(1,P.g1);x.strokeStyle=g;glow(1);
+      x.beginPath();x.arc(cx,cy,r,-Math.PI/2,-Math.PI/2+Math.PI*2*done/oq.length);x.stroke();glow(0)}
+    x.fillStyle=P.fg;x.font=WF(900,130);x.textAlign='center';x.fillText(done+'/'+oq.length,cx,cy+40);x.textAlign='left';
+    x.font=WF(600,22);x.fillStyle=P.mut;sp('ДЕЛ СЕГОДНЯ',cx,cy+100,7,'center');
+    x.font=WF(900,64);x.fillStyle=P.fg;x.textAlign='center';x.fillText('ДЕНЬ '+(I.n+1),540,970);x.textAlign='left';
+    accent(st.streak?'серия '+st.streak+' '+dn(st.streak):'первый день серии',540,1046,54,'center');
+    let y=1140;oq.slice(0,7).forEach(q=>{const on=isDone(TODAY,q),cxx=128,cyy=y-10;x.beginPath();x.arc(cxx,cyy,22,0,7);
+      if(on){x.fillStyle=P.pill;x.fill();x.strokeStyle=P.pillT;x.lineWidth=5;x.beginPath();x.moveTo(cxx-10,cyy);x.lineTo(cxx-3,cyy+8);x.lineTo(cxx+11,cyy-8);x.stroke()}
+      else{x.strokeStyle=ink(.25);x.lineWidth=3;x.stroke()}
+      x.font='500 34px Manrope, sans-serif';x.fillStyle=on?P.fg:P.dim;let t=q.t;while(x.measureText(t).width>780&&t.length>8)t=t.slice(0,-2);if(t!==q.t)t=t.trim()+'…';x.fillText(t,172,y);y+=62});
+    if(lost){x.font='500 30px Manrope, sans-serif';x.fillStyle=P.mut;x.textAlign='center';x.fillText('Сброшено '+lost.replace('−',''),540,Math.min(y+18,1620));x.textAlign='left'}
+    footer(1660);
+  }else if(v==='b'){ // серия: календарь-цепочка
+    const n=st.streak;x.font=WF(900,150);let s=150;const head=n+' '+dn(n).toUpperCase();while(x.measureText(head).width>Wd&&s>80){s-=6;x.font=WF(900,s)}
+    x.fillStyle=P.fg;x.fillText(head,M,560);accent('подряд',M,690,120);
+    x.font='400 34px Manrope, sans-serif';x.fillStyle=P.mut;x.fillText('Каждый день маленький шаг',M,790);
+    const cs=104,gp=(Wd-7*cs)/6,mon=addD(TODAY,-((d.getDay()+6)%7)-21);
+    ['ПН','ВТ','СР','ЧТ','ПТ','СБ','ВС'].forEach((w,i)=>{x.font=WF(600,18);x.fillStyle=P.dim;sp(w,M+i*(cs+gp)+cs/2,890,4,'center')});
+    for(let k=0;k<28;k++){const ds=addD(mon,k),X=M+(k%7)*(cs+gp),Y=920+Math.floor(k/7)*(cs+gp),a=lvl(ds);rr(x,X,Y,cs,cs,24);
+      if(a<0){x.strokeStyle=ink(.08);x.lineWidth=2;x.stroke()}else{x.fillStyle=a>=1?P.g1:ink(a?.18+a*.5:.07);glow(a>=1);x.fill();glow(0)}
+      if(ds===TODAY){rr(x,X-6,Y-6,cs+12,cs+12,30);x.strokeStyle=P.g1;x.lineWidth=3;x.stroke()}}
+    const chips=['Уровень '+(L.i+1)+' · '+L.name,fmt(st.xp)+' XP'];if(lost)chips.push(lost);let X=M;x.font='500 28px Manrope, sans-serif';
+    chips.forEach(t=>{const w=x.measureText(t).width+56;if(X+w>M+Wd)return;rr(x,X,1440,w,64,32);x.strokeStyle=ink(.2);x.lineWidth=2;x.stroke();x.fillStyle=P.fg;x.fillText(t,X+28,1482);X+=w+14});
+    footer(1660);
+  }else{ // минимал
+    x.font=WF(600,24);x.fillStyle=P.mut;sp('ДЕНЬ '+(I.n+1)+' В ИГРЕ',540,620,9,'center');
+    x.font=WF(900,96);x.fillStyle=P.fg;x.textAlign='center';x.fillText('Я ДЕРЖУ',540,760);x.textAlign='left';accent('ритм',540,880,110,'center');
+    const stt=[[String(st.streak),'ДНЕЙ ПОДРЯД'],[String(L.i+1),'УРОВЕНЬ'],lost?[lost.replace(' кг',''),'КГ'] :[fmt(st.xp),'XP']];
+    stt.forEach((s2,i)=>{const cx=M+Wd/6+i*Wd/3;x.font=WF(800,72);let fs=72;while(x.measureText(s2[0]).width>Wd/3-30&&fs>36){fs-=4;x.font=WF(800,fs)}
+      x.fillStyle=P.fg;x.textAlign='center';x.fillText(s2[0],cx,1100);x.textAlign='left';x.font=WF(600,18);x.fillStyle=P.mut;sp(s2[1],cx,1148,6,'center');
+      if(i){x.fillStyle=ink(.12);x.fillRect(M+i*Wd/3,1040,2,120)}});
+    const cs=(Wd-13*14)/14;for(let k=0;k<14;k++){const a=lvl(addD(TODAY,k-13));x.beginPath();x.arc(M+cs/2+k*(cs+14),1290,cs/2,0,7);
+      x.fillStyle=a>=1?P.g1:a>0?ink(.18+a*.5):ink(.08);x.fill()}
+    x.font=WF(600,18);x.fillStyle=P.dim;sp('ПОСЛЕДНИЕ 14 ДНЕЙ',540,1370,6,'center');
+    footer(1660);
+  }
   return c;
 }
 let stURL='',stJPG='';
-async function storyRender(){$('stImg').style.opacity=.4;const c=await drawStory($('stW').checked);stURL=c.toDataURL('image/png');stJPG=c.toDataURL('image/jpeg',.9);$('stImg').src=stURL;$('stImg').style.opacity=1}
+let STV='a';
+document.addEventListener('click',e=>{const o=e.target.closest('[data-sv]');if(!o)return;STV=o.dataset.sv;
+  document.querySelectorAll('#stVar .opt').forEach(b=>b.classList.toggle('on',b===o));sfx('pop');vib('select');storyRender()});
+async function storyRender(){$('stImg').style.opacity=.4;const c=await drawStory(STV,$('stW').checked);stURL=c.toDataURL('image/png');stJPG=c.toDataURL('image/jpeg',.9);$('stImg').src=stURL;$('stImg').style.opacity=1}
 $('stSend').onclick=async()=>{
   if(!TG){$('stHint').textContent='Открой Level Up кнопкой в боте, тогда картинка придёт в чат.';return}
   const b=$('stSend');b.disabled=true;b.textContent='Отправляю…';
