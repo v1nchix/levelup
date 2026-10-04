@@ -291,6 +291,10 @@ input,select{font-size:16px}
 .opt{padding:11px 16px;border-radius:100px;border:1px solid var(--line);background:transparent;color:#c3c3ca;font-family:var(--body);font-size:14px;cursor:pointer;transition:background .25s,color .25s,border-color .25s,transform .12s var(--ease)}
 .opt:active{transform:scale(.96)}
 .opt.on{background:#fff;color:#000;border-color:#fff;box-shadow:0 0 18px rgba(255,255,255,.35)}
+.opt.big{width:100%;text-align:left;border-radius:16px;padding:13px 16px;display:flex;flex-direction:column;gap:3px}
+.opt.big b{font-weight:500;color:var(--text);font-size:15px}
+.opt.big span{font-size:12px;color:var(--muted);line-height:1.4}
+.opt.big.on b,.opt.big.on span{color:#000}
 .ob .mform{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:20px}
 .ob .fld input{width:100%}
 .onb-nav{display:flex;gap:10px;margin-top:28px;align-items:center}
@@ -550,19 +554,42 @@ input,select{font-size:16px}
 
   <section class="onb-step" data-s="2">
     <span class="tag">Шаг 3 из 5</span>
-    <h2>Как проходит <span class="accent">день</span></h2>
-    <p class="lead">Из этого соберём бонусы: движение, которое встраивается в твою жизнь само.</p>
+    <h2>Твой обычный <span class="accent">день</span></h2>
+    <p class="lead">Из ответов соберём задания, которые встраиваются в твой день сами.</p>
+    <div class="olabel">Чем ты занят большую часть дня</div>
+    <div class="opts" data-g="day" data-single>
+      <button class="opt big" data-v="home"><b>Работаю из дома</b><span>за компьютером</span></button>
+      <button class="opt big" data-v="office"><b>Хожу на работу или учёбу</b><span>там в основном сижу</span></button>
+      <button class="opt big" data-v="feet"><b>Работа на ногах</b><span>много хожу или стою</span></button>
+      <button class="opt big" data-v="free"><b>Не работаю и не учусь</b><span>сейчас свободный график</span></button>
+    </div>
+    <div class="olabel">Как обычно передвигаешься по городу</div>
+    <div class="opts" data-g="commute" data-single>
+      <button class="opt" data-v="walk">Пешком</button><button class="opt" data-v="transport">На автобусе или метро</button><button class="opt" data-v="car">На машине или такси</button><button class="opt" data-v="none">Почти никуда не выхожу</button>
+    </div>
+    <div class="olabel">Сколько времени в день готов тратить на задания</div>
+    <div class="opts" data-g="time" data-single>
+      <button class="opt" data-v="15">15 минут</button><button class="opt" data-v="30">30 минут</button><button class="opt" data-v="45">45 минут и больше</button>
+    </div>
+    <div class="olabel">Что из этого про тебя (можно несколько)</div>
     <div class="opts" data-g="life">
-      <button class="opt" data-v="pc">Работаю за компьютером</button><button class="opt" data-v="games">Играю в игры</button><button class="opt" data-v="series">Смотрю сериалы</button><button class="opt" data-v="stairs">Есть лестница</button><button class="opt" data-v="shops">Магазины рядом</button><button class="opt" data-v="dog">Есть собака</button><button class="opt" data-v="transport">Езжу на транспорте</button>
+      <button class="opt big" data-v="games"><b>Играю в компьютерные игры</b><span>будут приседания между катками</span></button>
+      <button class="opt big" data-v="series"><b>Смотрю сериалы или YouTube</b><span>будет движение во время серии</span></button>
+      <button class="opt big" data-v="dog"><b>Есть собака</b><span>прогулки с ней пойдут в зачёт</span></button>
+      <button class="opt big" data-v="shops"><b>Магазин или кафе в 10 минутах пешком</b><span>будет задание сходить пешком, а не заказывать</span></button>
+      <button class="opt big" data-v="stairs"><b>Живу или работаю выше 2 этажа</b><span>будет задание подняться по лестнице</span></button>
     </div>
   </section>
 
   <section class="onb-step" data-s="3">
     <span class="tag">Шаг 4 из 5</span>
-    <h2>Как у тебя с <span class="accent">бегом</span></h2>
-    <p class="lead">От этого зависит, с какой недели начнётся программа кардио.</p>
+    <h2>Бег и <span class="accent">кардио</span></h2>
+    <p class="lead">Выбери, что больше про тебя. От этого зависит, с чего начнётся программа.</p>
     <div class="opts" data-g="run" data-single>
-      <button class="opt" data-v="none">Не бегаю совсем</button><button class="opt" data-v="some">Бегаю иногда</button><button class="opt" data-v="reg">Бегаю регулярно</button><button class="opt" data-v="no">Бег не подходит: колени, вес, здоровье</button>
+      <button class="opt big" data-v="none"><b>Не бегаю</b><span>начнём с чередования: минута бега, полторы шагом</span></button>
+      <button class="opt big" data-v="some"><b>Иногда бегаю</b><span>могу пробежать 5-10 минут без остановки</span></button>
+      <button class="opt big" data-v="reg"><b>Бегаю регулярно</b><span>могу 20 минут и больше без остановки</span></button>
+      <button class="opt big" data-v="no"><b>Бег мне не подходит</b><span>колени, большой вес или здоровье. Будет быстрая ходьба</span></button>
     </div>
   </section>
 
@@ -573,10 +600,12 @@ input,select{font-size:16px}
     <div class="opts" data-g="food">
       <button class="opt" data-v="sweets">Сладкое</button><button class="opt" data-v="delivery">Доставка и фастфуд</button><button class="opt" data-v="night">Ночные перекусы</button><button class="opt" data-v="skip">Пропускаю завтрак</button><button class="opt" data-v="soda">Сладкая газировка</button>
     </div>
-    <div class="olabel">Режим</div>
-    <div class="opts" data-g="chrono" data-single><button class="opt" data-v="lark">Жаворонок</button><button class="opt" data-v="owl">Сова</button><button class="opt" data-v="var">Режим плавает</button></div>
-    <div class="olabel">Сколько времени в день готов уделять</div>
-    <div class="opts" data-g="time" data-single><button class="opt" data-v="15">15 минут</button><button class="opt" data-v="30">30 минут</button><button class="opt" data-v="45">45 минут и больше</button></div>
+    <div class="olabel">Режим сна</div>
+    <div class="opts" data-g="chrono" data-single>
+      <button class="opt big" data-v="lark"><b>Рано ложусь, рано встаю</b><span>отбой до полуночи</span></button>
+      <button class="opt big" data-v="owl"><b>Поздно ложусь</b><span>засыпаю после полуночи</span></button>
+      <button class="opt big" data-v="var"><b>Каждый день по-разному</b><span>режим плавает</span></button>
+    </div>
   </section>
 
   <p class="small" id="oErr" role="alert"></p>
@@ -609,7 +638,7 @@ function haptic(ok){try{if(TG&&TG.HapticFeedback){ok?TG.HapticFeedback.notificat
 
 // ---------- состояние ----------
 // Данные человека живут только у него: в памяти телефона и в облаке Телеграма.
-const DEFP={sex:'f',inv:[],life:[],run:'none',food:[],chrono:'var',time:30};
+const DEFP={sex:'f',inv:[],day:'home',commute:'none',life:[],run:'none',food:[],chrono:'var',time:30};
 function norm(d){d=d&&typeof d==='object'?d:{};
   const s={start:d.start||TODAY,startWeight:d.startWeight||70,goal:d.goal||62,height:d.height||null,age:d.age||25,setup:!!d.setup,p:d.p||null,days:d.days||{},measures:d.measures||[],ach:d.ach||[]};
   Object.keys(s.days).forEach(k=>{const r=s.days[k]||{};s.days[k]={done:r.done||{},steps:r.steps||0,water:r.water||0,sets:r.sets||0,weight:r.weight||null,energy:r.energy||0,stp:r.stp||0}});
@@ -624,7 +653,7 @@ const has=(k,v)=>(P()[k]||[]).includes(v);
 const G=(f,m)=>P().sex==='m'?m:f;
 
 // облако Телеграма: 4096 символов на ключ, дни лежат по месяцам в сжатом виде
-const BITS=['move','body','protein','clean','sleep','bfast','home','walk','stairs','core','night','soda','dog','stop','series','cardio','hang'];
+const BITS=['move','body','protein','clean','sleep','bfast','home','walk','stairs','core','night','soda','dog','stop','series','cardio','hang','park'];
 function pack(){
   const out={cfg:JSON.stringify({start:S.start,startWeight:S.startWeight,goal:S.goal,height:S.height,age:S.age,setup:S.setup,p:S.p,ach:S.ach}),ms:JSON.stringify(S.measures)};
   Object.keys(S.days).sort().forEach(ds=>{const r=S.days[ds],k='d_'+ds.slice(0,4)+'_'+ds.slice(5,7);
@@ -705,7 +734,7 @@ const PRAISE=()=>['Есть!','Засчитано',G('Красавица','Кр�
 function info(ds){
   const n=diff(S.start,ds),w=Math.max(1,Math.floor(n/7)+1),wd=parse(ds).getDay(),p=P();
   const off={none:0,some:2,reg:6}[p.run]||0;
-  return {n,week:w,rw:Math.min(9,w+off),wd,run:[1,3,5].includes(wd),str:[2,4,6].includes(wd),steps:Math.min(8000,5000+500*(w-1)),T:+p.time||30,norun:p.run==='no'};
+  return {n,week:w,rw:Math.min(9,w+off),wd,run:[1,3,5].includes(wd),str:[2,4,6].includes(wd),steps:p.day==='feet'?Math.min(10000,7000+500*(w-1)):Math.min(8000,5000+500*(w-1)),T:+p.time||30,norun:p.run==='no'};
 }
 const walkMin=I=>Math.min(50,({15:15,30:25,45:35})[I.T]+5*(I.week-1));
 function strength(){
@@ -752,14 +781,16 @@ function bonuses(){
   if(has('life','series'))B.push({id:'series',xp:10,t:'Серия в движении',s:st?'Посмотри серию, шагая на степпере.':'Каждые 5 минут серии: 10 приседаний или планка 30 секунд.'});
   if(has('life','shops'))B.push({id:'walk',xp:10,t:G('Сходила','Сходил')+' по делам пешком',s:'Магазин, кафе, аптека. Шаги, которые не надо специально искать.'});
   if(has('life','dog'))B.push({id:'dog',xp:10,t:'Длинная прогулка с собакой',s:'30 минут и больше, быстрым шагом. Собака точно за.'});
-  if(has('life','transport'))B.push({id:'stop',xp:8,t:'Выйти на остановку раньше',s:'И дойти пешком. Плюс 1 000-1 500 шагов.'});
+  if(P().commute==='transport')B.push({id:'stop',xp:8,t:'Выйти на остановку раньше',s:'И дойти пешком. Плюс 1 000-1 500 шагов.'});
+  if(P().commute==='car')B.push({id:'park',xp:8,t:'Оставить машину подальше',s:'Парковка в 10 минутах от входа или выйти из такси раньше. Плюс 1 000 шагов.'});
   if(has('life','stairs'))B.push({id:'stairs',xp:8,t:'Лестница вместо лифта',s:'Хотя бы раз за день вверх пешком.'});
   if(has('inv','bike'))B.push({id:'cardio',xp:10,t:'Кардио 20 минут на тренажёре',s:'Спокойный темп под сериал или подкаст.'});
   if(has('inv','bar'))B.push({id:'hang',xp:6,t:'Вис на турнике',s:'3 × 20 секунд. Разгружает спину после дня за компом.'});
   B.push({id:'core',xp:10,t:'Пресс 5 минут',s:has('inv','roller')?'Ролик 3 × 8.':has('inv','rope')?'Скакалка 3 × 50 прыжков.':'Скручивания 3 × 15 и планка 30 секунд.'});
   return B;
 }
-const squatsOn=()=>has('life','games')||has('life','pc');
+const atDesk=()=>['home','office'].includes(P().day);
+const squatsOn=()=>has('life','games')||atDesk();
 const stepperOn=()=>has('inv','stepper');
 
 function rec(ds){return S.days[ds]||(S.days[ds]={done:{},steps:0,water:0,sets:0,weight:null,energy:0,stp:0})}
@@ -950,8 +981,9 @@ function renderHeat(){
 const LBL={sex:{f:'Женский',m:'Мужской'},run:{none:'Не бегаю',some:'Бегаю иногда',reg:'Бегаю регулярно',no:'Без бега'},chrono:{lark:'Жаворонок',owl:'Сова',var:'Режим плавает'}};
 function renderMe(){
   $('pH').value=S.height||'';$('pW').value=f1(S.startWeight);$('pG').value=f1(S.goal);$('pA').value=S.age||'';$('pS').value=S.start;
-  const p=P(),txt=g=>[...document.querySelectorAll(`#onb .opts[data-g="${g}"] .opt`)].filter(o=>(p[g]||[]).includes(o.dataset.v)).map(o=>o.textContent);
-  const chips=[LBL.sex[p.sex],LBL.run[p.run],LBL.chrono[p.chrono],p.time+' мин в день',...txt('inv'),...txt('life'),...txt('food')];
+  const p=P(),lbl=o=>(o.querySelector('b')||o).textContent,
+    txt=g=>[...document.querySelectorAll(`#onb .opts[data-g="${g}"] .opt`)].filter(o=>[].concat(p[g]).map(String).includes(o.dataset.v)).map(lbl);
+  const chips=[LBL.sex[p.sex],...txt('day'),...txt('commute'),p.time+' мин в день',...txt('run'),...txt('chrono'),...txt('inv'),...txt('life'),...txt('food')];
   $('profile').innerHTML=S.p?chips.map(c=>`<span class="mini">${c}</span>`).join(''):'';
 }
 function renderAll(){renderToday();renderPlan();renderProg();renderMe()}
@@ -1036,14 +1068,17 @@ function obCheck(){
     if(!h||h<120||h>230)return err('Впиши рост в сантиметрах, например 170.');
     if(!w||w<35||w>250||!g||g<35||g>250)return err('Впиши вес и цель в килограммах, например 70 и 62.');
     if(g>=w)return err('Цель должна быть меньше текущего веса.');}
+  if(obStep===2&&!pick('day').length)return err('Выбери, чем ты занят большую часть дня.');
+  if(obStep===2&&!pick('commute').length)return err('Выбери, как передвигаешься по городу.');
+  if(obStep===2&&!pick('time').length)return err('Выбери, сколько времени готов тратить на задания.');
   if(obStep===3&&!pick('run').length)return err('Выбери один вариант.');
-  if(obStep===4&&(!pick('chrono').length||!pick('time').length))return err('Выбери режим и сколько времени готов уделять.');
+  if(obStep===4&&!pick('chrono').length)return err('Выбери режим сна.');
   return true;
 }
 $('obBack').onclick=()=>obGo(Math.max(0,obStep-1));
 $('obNext').onclick=()=>{if(!obCheck())return;if(obStep<4)return obGo(obStep+1);
   const first=!S.setup,b=snap();
-  S.p={sex:pick('sex')[0],inv:pick('inv'),life:pick('life'),run:pick('run')[0],food:pick('food'),chrono:pick('chrono')[0],time:+pick('time')[0]};
+  S.p={sex:pick('sex')[0],inv:pick('inv'),day:pick('day')[0],commute:pick('commute')[0],life:pick('life'),run:pick('run')[0],food:pick('food'),chrono:pick('chrono')[0],time:+pick('time')[0]};
   S.age=Math.round(num($('oA').value));S.height=num($('oH').value);S.startWeight=num($('oW').value);S.goal=num($('oG').value);S.setup=true;
   if(first){S.start=TODAY;view=TODAY;const r=rec(TODAY);if(!r.weight)r.weight=S.startWeight}
   $('onb').classList.remove('show');commit(b);
