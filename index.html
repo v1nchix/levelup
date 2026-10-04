@@ -581,6 +581,15 @@ input,select{font-size:16px}
 <section class="screen" id="s-me">
   <span class="tag">Профиль</span>
   <h2>Про <span class="accent">меня</span></h2>
+  <div class="card demo-bar" id="ownerCard" hidden style="margin-top:26px">
+    <h3>Режим проверки · видишь только ты</h3>
+    <p class="small" style="margin-top:6px">Показывает анимации, звуки и вибрацию как у пользователя. Твой прогресс не меняется.</p>
+    <div class="opts" style="margin-top:26px">
+      <button class="opt" data-demo="xp">+XP за задание</button><button class="opt" data-demo="day">День засчитан</button><button class="opt" data-demo="perfect">Идеальный день</button>
+      <button class="opt" data-demo="level">Новый уровень</button><button class="opt" data-demo="ach">Награда</button><button class="opt" data-demo="freeze">Заморозка</button>
+      <button class="opt" data-demo="paid">Доступ открыт</button><button class="opt" data-demo="pay">Экран оплаты</button><button class="opt" data-demo="timer">Таймер 12 сек</button>
+    </div>
+  </div>
   <div class="card" style="margin-top:26px">
     <div class="banner" style="margin:0">
       <div><h3>Анкета</h3><p class="small" style="margin-top:6px">Купил тренажёр, сменил режим, завёл собаку? Пройди анкету заново, и задания перестроятся.</p></div>
@@ -600,15 +609,6 @@ input,select{font-size:16px}
       <div class="opts" id="themeOpts" style="margin-top:14px"><button class="opt" data-theme="auto">Как в Телеграме</button><button class="opt" data-theme="dark">Тёмная</button><button class="opt" data-theme="light">Светлая</button></div>
       <div class="opts" id="soundOpts" style="margin-top:8px"><button class="opt" data-sound="glass">Звуки: стекло</button><button class="opt" data-sound="harp">Звуки: арфа</button><button class="opt" data-sound="game">Звуки: 8-бит</button><button class="opt" data-sound="off">Без звука</button></div>
       <div class="opts" style="margin-top:8px"><button class="opt" data-try="tick">▶ Галочка</button><button class="opt" data-try="untick">▶ Снять галочку</button><button class="opt" data-try="water">▶ Вода</button><button class="opt" data-try="pop">▶ Плюсик</button><button class="opt" data-try="day">▶ День засчитан</button><button class="opt" data-try="win">▶ Новый уровень</button></div>
-    </div>
-  </div>
-  <div class="card demo-bar" id="ownerCard" hidden style="margin-top:14px">
-    <h3>Режим проверки · видишь только ты</h3>
-    <p class="small" style="margin-top:6px">Показывает анимации, звуки и вибрацию как у пользователя. Твой прогресс не меняется.</p>
-    <div class="opts" style="margin-top:14px">
-      <button class="opt" data-demo="xp">+XP за задание</button><button class="opt" data-demo="day">День засчитан</button><button class="opt" data-demo="perfect">Идеальный день</button>
-      <button class="opt" data-demo="level">Новый уровень</button><button class="opt" data-demo="ach">Награда</button><button class="opt" data-demo="freeze">Заморозка</button>
-      <button class="opt" data-demo="paid">Доступ открыт</button><button class="opt" data-demo="pay">Экран оплаты</button><button class="opt" data-demo="timer">Таймер 12 сек</button>
     </div>
   </div>
   <div class="card" style="margin-top:14px">
@@ -790,7 +790,7 @@ input,select{font-size:16px}
 const KEY='levelup.v1';
 // Версия сборки: проставляется скриптом deploy-app.ps1. Телеграм любит показывать старую копию из кэша,
 // поэтому при открытии приложение сверяет версию с сайтом и, если вышла новая, перезагружается.
-const BUILD='20261004-232937';
+const BUILD='20261004-233222';
 async function checkUpdate(){
   if(BUILD==='dev'||location.protocol==='file:')return;
   try{const t=await (await fetch('./?b='+Date.now(),{cache:'no-store'})).text(),m=t.match(/BUILD\s*=\s*'(\d{8}-\d{6})'/);
@@ -946,7 +946,8 @@ function gate(){if(PAID)return true;openPay();return false}
 async function checkStatus(){
   const r=await api('status',{});if(!r||!r.ok)return;
   OFFER={seats:r.seats,price:r.price,full:r.full};try{localStorage.setItem(KEY+'.offer',JSON.stringify(OFFER))}catch(e){}
-  const oc=document.getElementById('ownerCard');if(oc)oc.hidden=!r.owner;
+  const oc=document.getElementById('ownerCard');if(oc)oc.hidden=!r.owner&&!TESTMODE;
+  try{localStorage.setItem(KEY+'.owner',r.owner?'1':'0')}catch(e){}
   if(!!r.paid===PAID)return;
   const was=PAID;PAID=!!r.paid;try{localStorage.setItem(KEY+'.paid',PAID?'1':'0')}catch(e){}
   if(PAID&&!was){if(S.start<TODAY){S.start=TODAY;view=TODAY}S.trial=null;save();document.getElementById('pay').classList.remove('show');renderAll();
@@ -1371,7 +1372,12 @@ function openPay(afterTrial){
   $('pay').classList.add('show');haptic(false);
 }
 $('payClose').onclick=()=>$('pay').classList.remove('show');
-// режим проверки для владелицы: проигрывает награды без изменения данных
+// режим проверки для владелицы: проигрывает награды без изменения данных.
+// Показывается, если сервер узнал владелицу, или если приложение открыто ссылкой с ?test=1 (команда /test в боте).
+const TESTMODE=new URLSearchParams(location.search).get('test')==='1';
+(function(){let own=false;try{own=localStorage.getItem(KEY+'.owner')==='1'}catch(e){}
+  if(own||TESTMODE)$('ownerCard').hidden=false;
+  if(TESTMODE)setTimeout(()=>{tab('s-me');$('ownerCard').scrollIntoView({block:'start'})},400)})();
 document.addEventListener('click',e=>{const b=e.target.closest('[data-demo]');if(!b)return;const k=b.dataset.demo,st=stats(),L=level(st.xp);
   if(k==='xp'){sfx('tick');vib('medium');floatXP($('lvTrack'),30);toast(rnd(PRAISE()),30);const tr=$('lvTrack');tr.classList.add('bump');setTimeout(()=>tr.classList.remove('bump'),700)}
   else if(k==='day'){toast('День засчитан в серию: '+(st.streak+1)+' '+dn(st.streak+1));setTimeout(()=>{sfx('day');vib('win')},180)}
