@@ -780,10 +780,10 @@ input,select{font-size:16px}
 const KEY='levelup.v1';
 // Версия сборки: проставляется скриптом deploy-app.ps1. Телеграм любит показывать старую копию из кэша,
 // поэтому при открытии приложение сверяет версию с сайтом и, если вышла новая, перезагружается.
-const BUILD='20261004-230440';
+const BUILD='20261004-230634';
 async function checkUpdate(){
   if(BUILD==='dev'||location.protocol==='file:')return;
-  try{const t=await (await fetch('./?b='+Date.now(),{cache:'no-store'})).text(),m=t.match(/const BUILD='20261004-230440']+)'/);
+  try{const t=await (await fetch('./?b='+Date.now(),{cache:'no-store'})).text(),m=t.match(/BUILD\s*=\s*'(\d{8}-\d{6})'/);
     if(m&&m[1]!==BUILD){const u=new URL(location.href);u.searchParams.set('v',m[1]);location.replace(u.toString())}}catch(e){}
 }
 checkUpdate();
