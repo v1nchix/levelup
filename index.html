@@ -602,6 +602,15 @@ input,select{font-size:16px}
       <div class="opts" style="margin-top:8px"><button class="opt" data-try="tick">▶ Галочка</button><button class="opt" data-try="day">▶ День засчитан</button><button class="opt" data-try="win">▶ Новый уровень</button></div>
     </div>
   </div>
+  <div class="card demo-bar" id="ownerCard" hidden style="margin-top:14px">
+    <h3>Режим проверки · видишь только ты</h3>
+    <p class="small" style="margin-top:6px">Показывает анимации, звуки и вибрацию как у пользователя. Твой прогресс не меняется.</p>
+    <div class="opts" style="margin-top:14px">
+      <button class="opt" data-demo="xp">+XP за задание</button><button class="opt" data-demo="day">День засчитан</button><button class="opt" data-demo="perfect">Идеальный день</button>
+      <button class="opt" data-demo="level">Новый уровень</button><button class="opt" data-demo="ach">Награда</button><button class="opt" data-demo="freeze">Заморозка</button>
+      <button class="opt" data-demo="paid">Доступ открыт</button><button class="opt" data-demo="pay">Экран оплаты</button><button class="opt" data-demo="timer">Таймер 12 сек</button>
+    </div>
+  </div>
   <div class="card" style="margin-top:14px">
     <h3>Цифры</h3>
     <div class="mform">
@@ -781,7 +790,7 @@ input,select{font-size:16px}
 const KEY='levelup.v1';
 // Версия сборки: проставляется скриптом deploy-app.ps1. Телеграм любит показывать старую копию из кэша,
 // поэтому при открытии приложение сверяет версию с сайтом и, если вышла новая, перезагружается.
-const BUILD='20261004-232608';
+const BUILD='20261004-232736';
 async function checkUpdate(){
   if(BUILD==='dev'||location.protocol==='file:')return;
   try{const t=await (await fetch('./?b='+Date.now(),{cache:'no-store'})).text(),m=t.match(/BUILD\s*=\s*'(\d{8}-\d{6})'/);
@@ -929,6 +938,7 @@ function gate(){if(PAID)return true;openPay();return false}
 async function checkStatus(){
   const r=await api('status',{});if(!r||!r.ok)return;
   OFFER={seats:r.seats,price:r.price,full:r.full};try{localStorage.setItem(KEY+'.offer',JSON.stringify(OFFER))}catch(e){}
+  const oc=document.getElementById('ownerCard');if(oc)oc.hidden=!r.owner;
   if(!!r.paid===PAID)return;
   const was=PAID;PAID=!!r.paid;try{localStorage.setItem(KEY+'.paid',PAID?'1':'0')}catch(e){}
   if(PAID&&!was){if(S.start<TODAY){S.start=TODAY;view=TODAY}S.trial=null;save();document.getElementById('pay').classList.remove('show');renderAll();
@@ -1353,6 +1363,18 @@ function openPay(afterTrial){
   $('pay').classList.add('show');haptic(false);
 }
 $('payClose').onclick=()=>$('pay').classList.remove('show');
+// режим проверки для владелицы: проигрывает награды без изменения данных
+document.addEventListener('click',e=>{const b=e.target.closest('[data-demo]');if(!b)return;const k=b.dataset.demo,st=stats(),L=level(st.xp);
+  if(k==='xp'){sfx('tick');vib('medium');floatXP($('lvTrack'),30);toast(rnd(PRAISE()),30);const tr=$('lvTrack');tr.classList.add('bump');setTimeout(()=>tr.classList.remove('bump'),700)}
+  else if(k==='day'){toast('День засчитан в серию: '+(st.streak+1)+' '+dn(st.streak+1));setTimeout(()=>{sfx('day');vib('win')},180)}
+  else if(k==='perfect'){toast('Идеальный день. Я тобой горжусь.');setTimeout(()=>{sfx('win');vib('win');confetti(80)},180)}
+  else if(k==='level'){const n=Math.min(LEVELS.length-1,L.i+1);overlay('Ура! Новый уровень','<span class="accent">'+LEVELS[n][1]+'</span>','Открыто: бонус «Степпер». Ты '+G('прокачалась','прокачался')+'! Каждая галочка двигает тебя вперёд, а тело растёт следом.',String(n+1))}
+  else if(k==='ach')overlay('Новая награда','Неделя <span class="accent">силы</span>','Серия 7 дней. Это уже не случайность, это ты.');
+  else if(k==='freeze')overlay('Награда за серию','Заморозка<br><span class="accent">получена</span>','7 дней подряд! Если однажды пропустишь день, заморозка сохранит серию. Копится до двух.');
+  else if(k==='paid')overlay('Доступ открыт','Level Up<br><span class="accent">навсегда</span>','Спасибо! Теперь все задания, уровни и прогресс твои. Начинаем день 1.');
+  else if(k==='pay')openPay(true);
+  else if(k==='timer')timerOpen('test');
+});
 $('payBtn').onclick=async()=>{
   if(!TG){toast('Открой Level Up кнопкой в боте @levelup_fit_bot');return}
   const b=$('payBtn');b.disabled=true;b.textContent='Секунду…';
@@ -1451,7 +1473,7 @@ function alertPhase(){haptic(true);try{navigator.vibrate&&navigator.vibrate([200
 async function keepAwake(){try{if(navigator.wakeLock&&!wlock){wlock=await navigator.wakeLock.request('screen');wlock.addEventListener('release',()=>{wlock=null})}}catch(e){}}
 function timerOpen(mode){
   try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();actx.resume()}catch(e){}
-  const seq=mode==='move'?moveSeq(view):null;
+  const seq=mode==='move'?moveSeq(view):mode==='test'?[['warm',3],['run',5],['walk',4]]:null;
   TM={mode,seq,total:seq?seq.reduce((a,x)=>a+x[1],0):0,start:Date.now(),pausedAt:0,paused:0,idx:-1,done:false};
   $('tmTag').textContent=mode==='plank'?'Секундомер планки':'Таймер';$('tmPause').textContent='Пауза';$('tmStop').textContent=mode==='plank'?'Стоп':'Завершить';
   $('tmr').classList.add('show');keepAwake();tmTick();TM.iv=setInterval(tmTick,250);
@@ -1469,7 +1491,8 @@ function tmTick(){if(!TM)return;const el=tmElapsed();
   $('tmBar').style.width=Math.min(100,el/TM.total*100)+'%';
 }
 function tmClose(){clearInterval(TM.iv);try{wlock&&wlock.release()}catch(e){}wlock=null;$('tmr').classList.remove('show');TM=null}
-function tmFinish(){if(!TM||TM.done)return;TM.done=true;alertPhase();tmClose();
+function tmFinish(){if(!TM||TM.done)return;TM.done=true;alertPhase();const md=TM.mode;tmClose();
+  if(md==='test'){overlay('Проверка таймера','Таймер <span class="accent">работает</span>','Так звучит и вибрирует смена интервалов и конец тренировки.');return}
   const b=snap();const had=rec(view).done.move;rec(view).done.move=true;
   overlay('Тренировка сделана','Есть <span class="accent">кардио</span>','Засчитано. Тело только что стало чуть выносливее.');
   if(!had)commit(b);
