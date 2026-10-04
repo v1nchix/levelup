@@ -62,6 +62,13 @@ body::before{content:"";position:fixed;width:80vw;height:80vw;max-width:1100px;m
   padding:18px 24px;max-width:1140px;margin:0 auto;
   font-family:var(--wide);font-size:11px;letter-spacing:.22em;font-weight:500;background:linear-gradient(var(--bg) 55%,transparent)}
 .top .r{color:var(--muted);font-size:9px;text-align:right}
+.topr{display:flex;align-items:center;gap:8px}
+.tbtn{width:36px;height:36px;background:var(--panel)}
+.tbtn svg{width:16px;height:16px}
+.ic-moon,.light .ic-sun{display:none}
+.light .ic-moon{display:inline}
+.snd-off,.mute .snd-on{display:none}
+.mute .snd-off{display:inline}
 .wrap{position:relative;z-index:1;max-width:1140px;margin:0 auto;padding:0 24px}
 
 .tag{display:inline-flex;padding:7px 14px;border:1px solid var(--line);border-radius:100px;background:var(--panel);
@@ -356,7 +363,10 @@ input,select{font-size:16px}
 </head>
 <body>
 
-<div class="top"><span>LEVEL UP</span><span class="r" id="topr"></span></div>
+<div class="top"><span>LEVEL UP</span><span class="topr"><span class="r" id="topr"></span>
+  <button class="ib tbtn" id="sndBtn" aria-label="Звук"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 5 6 9H3v6h3l5 4z"/><path class="snd-on" d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/><path class="snd-off" d="m16 9 6 6m0-6-6 6"/></svg></button>
+  <button class="ib tbtn" id="themeBtn" aria-label="Сменить тему"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><g class="ic-sun"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></g><path class="ic-moon" d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>
+</span></div>
 
 <noscript><div class="wrap"><p class="lead">Level Up работает со скриптами. Открой его кнопкой в Телеграм-боте @levelup_fit_bot.</p></div></noscript>
 
@@ -563,9 +573,10 @@ input,select{font-size:16px}
       <div class="ctl"><button class="btn solid" data-support>Написать в поддержку</button></div>
     </div>
     <div class="card">
-      <h3>Тема</h3>
-      <p class="small" style="margin-top:6px">Тёмная, светлая или как в Телеграме.</p>
+      <h3>Тема и звук</h3>
+      <p class="small" style="margin-top:6px">Быстро переключить можно кнопками вверху экрана.</p>
       <div class="opts" id="themeOpts" style="margin-top:14px"><button class="opt" data-theme="auto">Как в Телеграме</button><button class="opt" data-theme="dark">Тёмная</button><button class="opt" data-theme="light">Светлая</button></div>
+      <div class="opts" id="soundOpts" style="margin-top:8px"><button class="opt" data-sound="1">Звуки вкл</button><button class="opt" data-sound="0">Звуки выкл</button></div>
     </div>
   </div>
   <div class="card" style="margin-top:14px">
@@ -653,6 +664,7 @@ input,select{font-size:16px}
 
   <section class="onb-step on" data-s="0">
     <span class="tag">Шаг 1 из 5</span>
+    <div class="opts" data-g="theme" data-single style="margin:0 0 18px"><button class="opt" data-v="dark">Тёмная тема</button><button class="opt" data-v="light">Светлая тема</button></div>
     <h2>Давай <span class="accent">знакомиться</span></h2>
     <p class="lead">Пять коротких вопросов, и Level Up соберёт план под твою жизнь. Ответы видишь только ты.</p>
     <div class="olabel">Пол</div>
@@ -777,7 +789,35 @@ document.addEventListener('click',e=>{
     if(TG){try{TG.openTelegramLink(url)}catch(x){}setTimeout(()=>{try{TG.close()}catch(x){}},300)}else location.href=url}
 });
 if(TG&&TG.onEvent)TG.onEvent('themeChanged',applyTheme);
+const isLight=()=>document.documentElement.classList.contains('light');
+function setTheme(t){THEME=t;try{localStorage.setItem(KEY+'.theme',t)}catch(x){}applyTheme();
+  document.querySelectorAll('#onb [data-g="theme"] .opt').forEach(o=>o.classList.toggle('on',o.dataset.v===(isLight()?'light':'dark')))}
+document.getElementById('themeBtn').onclick=()=>{setTheme(isLight()?'dark':'light');haptic(false);sfx('pop')};
 applyTheme();
+
+// звуки: короткие синтезированные сигналы, без файлов. Включаются по умолчанию, выключаются кнопкой вверху.
+let SND=true;try{SND=localStorage.getItem(KEY+'.sound')!=='0'}catch(e){}
+let AC=null;
+function audio(){try{if(!AC)AC=new (window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume()}catch(e){AC=null}return AC}
+function tone(f,start,dur,vol,type){const a=audio();if(!a)return;const o=a.createOscillator(),g=a.createGain(),t=a.currentTime+start;
+  o.type=type||'sine';o.frequency.setValueAtTime(f,t);g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+.012);g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+  o.connect(g);g.connect(a.destination);o.start(t);o.stop(t+dur+.02)}
+const SFX={
+  tick:()=>{tone(1318.5,0,.18,.16);tone(1975.5,.07,.28,.12)},           // галочка: мягкий двойной «динь»
+  untick:()=>{tone(392,0,.14,.1,'triangle')},
+  pop:()=>{tone(880,0,.07,.08,'triangle')},                                // плюс стакан, подход, переключатель
+  day:()=>{[784,988,1318.5].forEach((f,i)=>tone(f,i*.09,.3,.13))},       // день засчитан
+  win:()=>{[659,784,988,1318.5,1568].forEach((f,i)=>tone(f,i*.08,.38,.12));tone(2093,.42,.6,.08)}, // уровень, награда, идеальный день
+  lock:()=>{tone(220,0,.12,.08,'triangle');tone(196,.08,.16,.07,'triangle')}
+};
+function sfx(n){if(SND&&SFX[n])try{SFX[n]()}catch(e){}}
+function vib(kind){try{if(!TG||!TG.HapticFeedback)return;const h=TG.HapticFeedback;
+  if(kind==='select')h.selectionChanged();else if(kind==='win')h.notificationOccurred('success');else if(kind==='warn')h.notificationOccurred('warning');else h.impactOccurred(kind||'light')}catch(e){}}
+function applySound(){document.documentElement.classList.toggle('mute',!SND);document.querySelectorAll('#soundOpts .opt').forEach(o=>o.classList.toggle('on',o.dataset.sound===(SND?'1':'0')))}
+function setSound(on){SND=on;try{localStorage.setItem(KEY+'.sound',on?'1':'0')}catch(e){}applySound();if(on)sfx('pop')}
+document.getElementById('sndBtn').onclick=()=>{setSound(!SND);vib('select')};
+document.addEventListener('click',e=>{const s=e.target.closest('[data-sound]');if(s)setSound(s.dataset.sound==='1')});
+applySound();
 // сервер Level Up: напоминания и отправка картинок в чат. Туда уходит только итог дня, без веса и замеров.
 const API='https://functions.yandexcloud.net/d4ec38bbqerlda1v5ktp';
 async function api(a,payload){if(!TG)return null;
@@ -1220,8 +1260,8 @@ $('payBtn').onclick=async()=>{
 
 // ---------- обратная связь ----------
 let tt;
-function toast(text,xp){haptic(false);const t=$('toast');t.innerHTML=(xp?`<span class="xp">+${xp} XP</span>`:'')+'<span>'+text+'</span>';t.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),2400)}
-function overlay(tag,title,text){haptic(true);$('oTag').textContent=tag;$('oTitle').innerHTML=title;$('oText').textContent=text;$('over').classList.add('show')}
+function toast(text,xp){const t=$('toast');t.innerHTML=(xp?`<span class="xp">+${xp} XP</span>`:'')+'<span>'+text+'</span>';t.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),2400)}
+function overlay(tag,title,text){vib('win');sfx('win');$('oTag').textContent=tag;$('oTitle').innerHTML=title;$('oText').textContent=text;$('over').classList.add('show')}
 $('oBtn').onclick=()=>$('over').classList.remove('show');
 function snap(){const st=stats();return {xp:st.xp,fz:st.fz,dc:doneCount(view),odc:openQuests(view).filter(q=>isDone(view,q)).length}}
 function unlockedBetween(a,b){
@@ -1237,8 +1277,8 @@ function commit(before){
   if(L1.i>L0.i){const u=unlockedBetween(L0.i,L1.i);overlay('Новый уровень '+(L1.i+1),'Уровень<br><span class="accent">'+L1.name+'</span>',u.length?'Открыто: '+u.join(', ')+'.':'Уровень растёт от каждой галочки. Тело растёт следом, просто медленнее. Продолжай.')}
   else if(st.fz>before.fz)overlay('Награда за серию','Заморозка<br><span class="accent">получена</span>','7 дней подряд! Если однажды пропустишь день, заморозка сохранит серию. Копится до двух.');
   else if(fresh.length)overlay('Новая награда',fresh[0].t.replace(/(\S+)$/,'<span class="accent">$1</span>'),fresh[0].s+'. Это уже не случайность, это ты.');
-  else if(before.dc<DAY_OK&&doneCount(view)>=DAY_OK&&view===TODAY)toast('День засчитан в серию: '+st.streak+' '+dn(st.streak));
-  else if(before.odc<oq.length&&odc===oq.length)toast('Идеальный день. Я тобой горжусь.');
+  else if(before.dc<DAY_OK&&doneCount(view)>=DAY_OK&&view===TODAY){toast('День засчитан в серию: '+st.streak+' '+dn(st.streak));setTimeout(()=>{sfx('day');vib('win')},180)}
+  else if(before.odc<oq.length&&odc===oq.length){toast('Идеальный день. Я тобой горжусь.');setTimeout(()=>{sfx('win');vib('win')},180)}
 }
 
 // ---------- действия ----------
@@ -1250,7 +1290,7 @@ document.addEventListener('click',e=>{
   if(demo()&&e.target.closest('[data-steps],#wIn')){e.target.blur();openPay();return}
   const w=e.target.closest('[data-w]'),s=e.target.closest('[data-s]'),en=e.target.closest('[data-e]'),p=e.target.closest('[data-p]');
   if((w||s||p||en)&&!gate())return;
-  if(w||s||p){const b=snap(),r=rec(view);
+  if(w||s||p){const b=snap(),r=rec(view);sfx('pop');vib('light');
     if(p){const v=+p.dataset.p;r.stp=Math.max(0,(r.stp||0)+v);if(v>0&&r.stp<=9)toast(r.stp*10+' минут на степпере. '+rnd(PRAISE()),6)}
     else if(w){const was=r.water;r.water=Math.max(0,Math.min(12,(r.water||0)+ +w.dataset.w));if(was<6&&r.water>=6)toast('Вода на сегодня есть',10)}
     else{const v=+s.dataset.s;r.sets=Math.max(0,(r.sets||0)+v);if(v>0&&r.sets<=10)toast(rnd(PRAISE())+'. Ещё 10 приседаний',3)}
@@ -1262,7 +1302,7 @@ document.addEventListener('click',e=>{
     // демо: одно пробное задание можно отметить, потом экран оплаты
     if(demo()){if(S.trial){openPay();return}S.trial=id}
     r.done[id]=!r.done[id];
-    if(r.done[id])toast(rnd(PRAISE()),qq.xp);
+    if(r.done[id]){toast(rnd(PRAISE()),qq.xp);sfx('tick');vib('medium')}else{sfx('untick');vib('light')}
     commit(b);const el=document.querySelector(`.q[data-q="${id}"]`);if(el&&r.done[id])el.classList.add('pop');
     if(demo())setTimeout(()=>openPay(true),1800);
   }
@@ -1396,6 +1436,7 @@ function obOpen(){
   const p=S.p||{};
   document.querySelectorAll('#onb .opts').forEach(g=>{const v=p[g.dataset.g];g.querySelectorAll('.opt').forEach(o=>o.classList.toggle('on',Array.isArray(v)?v.includes(o.dataset.v):v!=null&&String(v)===o.dataset.v))});
   $('oOk').checked=!!S.setup;
+  document.querySelectorAll('#onb [data-g="theme"] .opt').forEach(o=>o.classList.toggle('on',o.dataset.v===(isLight()?'light':'dark')));
   if(S.setup){$('oA').value=S.age||'';$('oH').value=S.height||'';$('oW').value=f1(S.startWeight);$('oG').value=f1(S.goal)}
   obGo(0);$('onb').classList.add('show');
 }
@@ -1403,7 +1444,9 @@ function obGo(i){obStep=i;document.querySelectorAll('.onb-step').forEach(s=>s.cl
   [...$('obDots').children].forEach((d,k)=>d.classList.toggle('on',k<=i));
   $('obBack').hidden=i===0;$('obNext').textContent=i===4?'Собрать мой план':'Дальше';$('oErr').textContent='';$('onb').querySelector('.card').scrollTop=0}
 document.addEventListener('click',e=>{const o=e.target.closest('#onb .opt');if(!o)return;const g=o.parentElement;
-  if(g.hasAttribute('data-single'))g.querySelectorAll('.opt').forEach(x=>x.classList.toggle('on',x===o));else o.classList.toggle('on');haptic(false)});
+  if(g.hasAttribute('data-single'))g.querySelectorAll('.opt').forEach(x=>x.classList.toggle('on',x===o));else o.classList.toggle('on');
+  if(g.dataset.g==='theme')setTheme(o.dataset.v);
+  vib('select');sfx('pop')});
 const err=t=>{$('oErr').textContent=t;haptic(true);return false};
 function obCheck(){
   if(obStep===0){const a=num($('oA').value),h=num($('oH').value),w=num($('oW').value),g=num($('oG').value);
