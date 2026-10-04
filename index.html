@@ -688,7 +688,8 @@ function syncSoon(){if(!TG||!S.setup)return;clearTimeout(syncTimer);syncTimer=se
 async function syncNow(){
   const st=stats(),tm=addD(TODAY,1),mv=ds=>quests(ds).find(q=>q.id==='move').t;
   const s={date:TODAY,dc:doneCount(TODAY),open:openQuests(TODAY).length,streak:st.streak,fz:st.fz,lvl:LI+1,xp:st.xp,sex:P().sex,tz:-new Date().getTimezoneOffset(),plan:{[TODAY]:mv(TODAY),[tm]:mv(tm)}};
-  const body=JSON.stringify(s);if(body===lastSync)return;
+  // пишем на сервер только когда меняется то, от чего зависят напоминания: так меньше платных операций
+  const body=[s.date,Math.min(s.dc,DAY_OK),s.streak,s.fz,s.sex,s.tz,P().run,P().time].join('|');if(body===lastSync)return;
   const r=await api('sync',{s});if(!r)return;
   lastSync=r.ok?body:'';
   const ban=document.getElementById('remBanner');if(ban)ban.hidden=!(r.need==='consent');
