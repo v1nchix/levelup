@@ -599,7 +599,7 @@ input,select{font-size:16px}
       <p class="small" style="margin-top:6px">Быстро переключить можно кнопками вверху экрана.</p>
       <div class="opts" id="themeOpts" style="margin-top:14px"><button class="opt" data-theme="auto">Как в Телеграме</button><button class="opt" data-theme="dark">Тёмная</button><button class="opt" data-theme="light">Светлая</button></div>
       <div class="opts" id="soundOpts" style="margin-top:8px"><button class="opt" data-sound="glass">Звуки: стекло</button><button class="opt" data-sound="harp">Звуки: арфа</button><button class="opt" data-sound="game">Звуки: 8-бит</button><button class="opt" data-sound="off">Без звука</button></div>
-      <div class="opts" style="margin-top:8px"><button class="opt" data-try="tick">▶ Галочка</button><button class="opt" data-try="day">▶ День засчитан</button><button class="opt" data-try="win">▶ Новый уровень</button></div>
+      <div class="opts" style="margin-top:8px"><button class="opt" data-try="tick">▶ Галочка</button><button class="opt" data-try="untick">▶ Снять галочку</button><button class="opt" data-try="water">▶ Вода</button><button class="opt" data-try="pop">▶ Плюсик</button><button class="opt" data-try="day">▶ День засчитан</button><button class="opt" data-try="win">▶ Новый уровень</button></div>
     </div>
   </div>
   <div class="card demo-bar" id="ownerCard" hidden style="margin-top:14px">
@@ -790,7 +790,7 @@ input,select{font-size:16px}
 const KEY='levelup.v1';
 // Версия сборки: проставляется скриптом deploy-app.ps1. Телеграм любит показывать старую копию из кэша,
 // поэтому при открытии приложение сверяет версию с сайтом и, если вышла новая, перезагружается.
-const BUILD='20261004-232736';
+const BUILD='20261004-232937';
 async function checkUpdate(){
   if(BUILD==='dev'||location.protocol==='file:')return;
   try{const t=await (await fetch('./?b='+Date.now(),{cache:'no-store'})).text(),m=t.match(/BUILD\s*=\s*'(\d{8}-\d{6})'/);
@@ -837,7 +837,7 @@ if(TG&&TG.onEvent)TG.onEvent('themeChanged',applyTheme);
 const isLight=()=>document.documentElement.classList.contains('light');
 function setTheme(t){THEME=t;try{localStorage.setItem(KEY+'.theme',t)}catch(x){}applyTheme();
   document.querySelectorAll('#onb [data-g="theme"] .opt').forEach(o=>o.classList.toggle('on',o.dataset.v===(isLight()?'light':'dark')))}
-document.getElementById('themeBtn').onclick=()=>{setTheme(isLight()?'dark':'light');haptic(false);sfx('pop')};
+document.getElementById('themeBtn').onclick=()=>{setTheme(isLight()?'dark':'light');vib('select')};
 applyTheme();
 
 // звуки: короткие синтезированные сигналы, без файлов. Два набора: игровые (8-бит) и мягкие.
@@ -872,6 +872,14 @@ function tap(start,vol,freq){const a=audio();if(!a)return;const t=a.currentTime+
   o.frequency.setValueAtTime(f,t);o.frequency.exponentialRampToValueAtTime(f*.55,t+.035);
   g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol*.45,t+.002);g.gain.exponentialRampToValueAtTime(.0001,t+.05);
   o.connect(g);g.connect(a.destination);o.start(t);o.stop(t+.07)}
+// мягкие служебные звуки: низкие, с плавной атакой и срезанными верхами, чтобы не резали слух
+function soft(f1,f2,start,dur,vol,cut){const a=audio();if(!a)return;const t=a.currentTime+start,o=a.createOscillator(),g=a.createGain(),lp=a.createBiquadFilter();
+  lp.type='lowpass';lp.frequency.value=cut||1800;o.type='sine';o.frequency.setValueAtTime(f1,t);o.frequency.exponentialRampToValueAtTime(f2,t+dur*.45);
+  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+.012);g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+  o.connect(g);g.connect(lp);lp.connect(a.destination);o.start(t);o.stop(t+dur+.05)}
+const droplet=()=>{soft(300,720,0,.16,.16,2200)};                        // вода: округлое «плюх»
+const softPop=()=>{soft(260,380,0,.14,.13,1400)};                          // плюсики: глухой мягкий поп
+const softUndo=()=>{soft(523,494,0,.16,.07,1600);soft(392,370,.11,.22,.07,1400)}; // снять галочку: две тихие ноты вниз
 function chord(fs,start,dur,vol){const a=audio();if(!a)return;const t=a.currentTime+start;fs.forEach(f=>{const o=a.createOscillator(),g=a.createGain();o.type='sine';o.frequency.value=f;
   g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+.25);g.gain.exponentialRampToValueAtTime(.0001,t+dur);o.connect(g);g.connect(a.destination);wetTo(a,g);o.start(t);o.stop(t+dur+.05)})}
 // щипок струны (для «Арфы»): основной тон и обертоны, тембр темнеет по мере затухания
@@ -884,22 +892,22 @@ function pluck(f,start,dur,vol,bright){const a=audio();if(!a)return;const t=a.cu
 const SETS={
   harp:{
     tick:()=>{pluck(1047,0,.9,.12);pluck(1319,.05,.9,.1);pluck(1568,.1,1,.1)},
-    untick:()=>{tap(0,.22,1300)},
-    pop:()=>{tap(0,.3,2700)},
+    untick:softUndo,water:droplet,
+    pop:softPop,
     day:()=>{[784,988,1175,1568].forEach((f,i)=>pluck(f,i*.06,1,.11))},
     win:()=>{[523,659,784,1047,1319,1568,2093].forEach((f,i)=>pluck(f,i*.055,1.3,.1,6500));chord([262,392,523],.4,2,.02)}
   },
   glass:{
     tick:()=>{bell(1568,0,.55,.085);bell(2093,.085,.8,.075)},                       // галочка: два стеклянных «динь» вверх
-    untick:()=>{tap(0,.22,1300)},                                                     // снять галочку: глухой тап
-    pop:()=>{tap(0,.3,2700)},                                                         // плюсики и переключатели: щелчок клавиатуры
+    untick:softUndo,water:droplet,                                                     // снять галочку: глухой тап
+    pop:softPop,                                                         // плюсики и переключатели: щелчок клавиатуры
     day:()=>{bell(1047,0,.7,.06);bell(1319,.1,.7,.06);bell(1568,.2,1,.07)},          // день засчитан
     win:()=>{bell(1047,0,.9,.055);bell(1319,.09,.9,.055);bell(1568,.18,1,.06);bell(2093,.3,1.5,.07);chord([523,659,784],.25,1.6,.018)} // уровень, награда
   },
   game:{ // 8-бит, как в старых играх: «монетка» за галочку, фанфара за уровень
     tick:()=>{tone(988,0,.08,.06,'square');tone(1319,.07,.32,.06,'square')},
     untick:()=>{tone(392,0,.07,.05,'square');tone(262,.06,.12,.05,'square')},
-    pop:()=>{tone(784,0,.05,.04,'square')},
+    pop:()=>{tone(784,0,.05,.04,'square')},water:()=>{tone(659,0,.05,.04,'square');tone(988,.05,.08,.04,'square')},
     day:()=>{[523,659,784,1047].forEach((f,i)=>tone(f,i*.075,.16,.055,'square'))},
     win:()=>{[523,659,784,1047,784,1047].forEach((f,i)=>tone(f,i*.085,.15,.055,'square'));tone(1568,.52,.55,.06,'square');tone(262,.52,.55,.07,'triangle')}
   },
@@ -1417,7 +1425,7 @@ document.addEventListener('click',e=>{
   if(demo()&&e.target.closest('[data-steps],#wIn')){e.target.blur();openPay();return}
   const w=e.target.closest('[data-w]'),s=e.target.closest('[data-s]'),en=e.target.closest('[data-e]'),p=e.target.closest('[data-p]');
   if((w||s||p||en)&&!gate())return;
-  if(w||s||p){const b=snap(),r=rec(view),bx=b.xp,key=(w||s||p).dataset;sfx('pop');vib('light');
+  if(w||s||p){const b=snap(),r=rec(view),bx=b.xp;sfx(w?'water':'pop');vib('light');
     setTimeout(()=>{const gain=stats().xp-bx;if(gain>0){const sel=w?'[data-w="1"]':s?'[data-s="1"]':'[data-p="1"]';floatXP(document.querySelector(sel),gain)}},30);
     if(p){const v=+p.dataset.p;r.stp=Math.max(0,(r.stp||0)+v);if(v>0&&r.stp<=9)toast(r.stp*10+' минут на степпере. '+rnd(PRAISE()),6)}
     else if(w){const was=r.water;r.water=Math.max(0,Math.min(12,(r.water||0)+ +w.dataset.w));if(was<6&&r.water>=6)toast('Вода на сегодня есть',10)}
@@ -1580,7 +1588,7 @@ async function drawStory(v,showW){
 let stURL='',stJPG='';
 let STV='a';
 document.addEventListener('click',e=>{const o=e.target.closest('[data-sv]');if(!o)return;STV=o.dataset.sv;
-  document.querySelectorAll('#stVar .opt').forEach(b=>b.classList.toggle('on',b===o));sfx('pop');vib('select');storyRender()});
+  document.querySelectorAll('#stVar .opt').forEach(b=>b.classList.toggle('on',b===o));vib('select');storyRender()});
 async function storyRender(){$('stImg').style.opacity=.4;const c=await drawStory(STV,$('stW').checked);stURL=c.toDataURL('image/png');stJPG=c.toDataURL('image/jpeg',.9);$('stImg').src=stURL;$('stImg').style.opacity=1}
 $('stSend').onclick=async()=>{
   if(!TG){$('stHint').textContent='Открой Level Up кнопкой в боте, тогда картинка придёт в чат.';return}
@@ -1620,7 +1628,7 @@ document.addEventListener('click',e=>{const o=e.target.closest('#onb .opt');if(!
   if(g.dataset.g==='theme')setTheme(o.dataset.v);
   vib('select');
   if(g.dataset.g==='snd'){setSound(o.dataset.v);return}  // выбор звука сразу проигрывает его
-  sfx('pop')});
+  });
 const err=t=>{$('oErr').textContent=t;haptic(true);return false};
 function obCheck(){
   if(obStep===0){const a=num($('oA').value),h=num($('oH').value),w=num($('oW').value),g=num($('oG').value);
