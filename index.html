@@ -449,7 +449,7 @@ input,select{font-size:16px}
     </div>
     <div class="card">
       <h3>Энергия сегодня</h3>
-      <p class="small">1 еле живой день, 5 летаешь. Через пару недель увидишь, как она растёт.</p>
+      <p class="small">1: сил совсем нет, 5: летаешь. Через пару недель увидишь, как она растёт.</p>
       <div class="energy" id="energy"></div>
     </div>
   </div>
@@ -459,7 +459,7 @@ input,select{font-size:16px}
 <section class="screen" id="s-plan">
   <span class="tag">План</span>
   <h2 id="planH">План <span class="accent">под тебя</span></h2>
-  <p class="lead">Без голодовок. Темп <b>0,5 кг в неделю</b>: так уходит жир, а не мышцы. Кардио даёт лёгкость и выносливость, силовая даёт форму.</p>
+  <p class="lead">Без голодовок. Темп <b>0,5 кг в неделю</b>: так уходит в основном жир, а мышцы сохраняются. Кардио даёт лёгкость и выносливость, силовая даёт форму.</p>
   <div class="disc" style="margin-top:20px"><p><b>Не медицинский сервис.</b> План собран по общим принципам здорового образа жизни и не является назначением врача, диетолога или программой профессионального тренера. «Тренер» в приложении это игровой персонаж. Плохое самочувствие, боль, головокружение: остановись и обратись к врачу.</p></div>
   <div class="stats" id="planStats"></div>
   <div id="calcCard"></div>
@@ -598,7 +598,7 @@ input,select{font-size:16px}
   </div>
   <div class="card" style="margin-top:26px">
     <div class="banner" style="margin:0">
-      <div><h3>Анкета</h3><p class="small" style="margin-top:6px">Купил тренажёр, сменил режим, завёл собаку? Пройди анкету заново, и задания перестроятся.</p></div>
+      <div><h3>Анкета</h3><p class="small" style="margin-top:6px">Появился тренажёр, поменялся режим или завелась собака? Пройди анкету заново, и задания перестроятся.</p></div>
       <button class="btn solid" id="retake">Пройти заново</button>
     </div>
     <div class="profile" id="profile"></div>
@@ -668,7 +668,7 @@ input,select{font-size:16px}
     <li><b>Прогресс:</b> вес по среднему, календарь, замеры, карточки для сторис</li>
     <li><b>Напоминания от бота</b> утром и вечером</li>
   </ul>
-  <div class="pricebox"><div class="pr"><b id="payPrice">699 ₽</b><s id="payOld">999 ₽</s></div><span class="mini" id="paySeats">Цена для первых 50</span></div>
+  <div class="pricebox"><div class="pr"><b id="payPrice">699 ₽</b><s id="payOld">999 ₽</s></div><span class="mini" id="paySeats">Цена для первых 50 покупателей</span></div>
   <button class="btn solid" id="payBtn" style="width:100%;margin-top:18px">Открыть доступ навсегда</button>
   <p class="small" style="text-align:center">Один платёж, без подписки. Оплата через ЮKassa. <a href="offer.html" target="_blank" style="color:var(--hi)">Оферта</a> · <a href="#" data-support style="color:var(--hi)">Вопрос? Поддержка</a></p>
   <button class="btn" id="payClose" style="width:100%;margin-top:10px">Позже</button>
@@ -725,7 +725,7 @@ input,select{font-size:16px}
   <section class="onb-step" data-s="1">
     <span class="tag">Шаг 2 из 5</span>
     <h2>Что есть <span class="accent">дома</span></h2>
-    <p class="lead">Отметь всё, что есть. Нет ничего? Не страшно, жми «Дальше»: хватит пола и стены.</p>
+    <p class="lead">Отметь всё, что есть. Нет ничего? Не страшно, жми «Дальше»: хватит пола.</p>
     <div class="opts" data-g="inv">
       <button class="opt" data-v="stepper">Степпер</button><button class="opt" data-v="mat">Коврик</button><button class="opt" data-v="db">Гантели</button><button class="opt" data-v="bands">Резинки</button><button class="opt" data-v="rope">Скакалка</button><button class="opt" data-v="roller">Ролик для пресса</button><button class="opt" data-v="bar">Турник</button><button class="opt" data-v="bike">Велотренажёр или дорожка</button>
     </div>
@@ -735,7 +735,7 @@ input,select{font-size:16px}
     <span class="tag">Шаг 3 из 5</span>
     <h2>Твой обычный <span class="accent">день</span></h2>
     <p class="lead">Из ответов соберём задания, которые встраиваются в твой день сами.</p>
-    <div class="olabel">Чем ты занят большую часть дня</div>
+    <div class="olabel">Как обычно проходит твой день</div>
     <div class="opts" data-g="day" data-single>
       <button class="opt big" data-v="home"><b>Работаю из дома</b><span>за компьютером</span></button>
       <button class="opt big" data-v="office"><b>Хожу на работу или учёбу</b><span>там в основном сижу</span></button>
@@ -746,7 +746,7 @@ input,select{font-size:16px}
     <div class="opts" data-g="commute" data-single>
       <button class="opt" data-v="walk">Пешком</button><button class="opt" data-v="transport">На автобусе или метро</button><button class="opt" data-v="car">На машине или такси</button><button class="opt" data-v="none">Почти никуда не выхожу</button>
     </div>
-    <div class="olabel">Сколько времени в день готов тратить на задания</div>
+    <div class="olabel">Сколько времени в день есть на задания</div>
     <div class="opts" data-g="time" data-single>
       <button class="opt" data-v="15">15 минут</button><button class="opt" data-v="30">30 минут</button><button class="opt" data-v="45">45 минут и больше</button>
     </div>
@@ -796,7 +796,7 @@ input,select{font-size:16px}
 const KEY='levelup.v1';
 // Версия сборки: проставляется скриптом deploy-app.ps1. Телеграм любит показывать старую копию из кэша,
 // поэтому при открытии приложение сверяет версию с сайтом и, если вышла новая, перезагружается.
-const BUILD='20261004-233550';
+const BUILD='20261004-233903';
 async function checkUpdate(){
   if(BUILD==='dev'||location.protocol==='file:')return;
   try{const t=await (await fetch('./?b='+Date.now(),{cache:'no-store'})).text(),m=t.match(/BUILD\s*=\s*'(\d{8}-\d{6})'/);
@@ -1040,7 +1040,7 @@ const RUN=[
 const LEVELS=[[0,'Старт'],[150,'Пробуждение'],[400,'Разогрев'],[750,'В ритме'],[1200,'Огонь'],[1800,'Выносливость'],[2600,'Сталь'],[3600,'Лёгкость'],[5000,'Пружина'],[7000,'Сияние'],[9500,'Новая версия'],[12500,'Легенда']];
 const TITLES=[['Маленький шаг ','каждый',' день'],['Ты уже ','в пути',''],['Сильнее, чем ','вчера',''],['Лёгкость ','начинается',' сегодня'],['Сегодня ','твой',' день']];
 function COACH(){const L=[
-  'Не надо идеально. Надо сегодня. Отметь первое дело, и день уже засчитан.',
+  'Не надо идеально. Надо сегодня. Отметь первое дело, и день уже пошёл.',
   'Тело меняется тихо, а галочки видно сразу. Собирай их.',
   'Ты не начинаешь с нуля. Ты начинаешь с решения, и оно уже принято.',
   'Тренировка длится полчаса. Гордость за неё длится весь день.',
@@ -1064,9 +1064,9 @@ function COACH(){const L=[
   if(has('food','delivery'))L.push('Доставка не враг, враг привычка. Сегодня собери ужин в магазине рядом: это тоже без готовки.');
   if(has('inv','stepper'))L.push('Степпер стоит рядом и ждёт. 10 минут под созвон или серию, и день уже лучше.');
   if(has('food','skip'))L.push('Завтрак с белком сегодня значит меньше голода и срывов вечером.');
-  if(has('life','series'))L.push('Серия идёт 40 минут. Хватит, чтобы и посмотреть, и подвигаться.');
+  if(has('life','series'))L.push('Одна серия сериала идёт 40 минут. Хватит, чтобы и посмотреть, и подвигаться.');
   return L}
-const PRAISE=()=>['Есть!','Засчитано',G('Красавица','Красавчик'),'Так держать','Огонь','Вот это да','Тело запомнит',G('Умница','Молодец'),'Плюс в форму','Сильно'];
+const PRAISE=()=>['Есть!','Засчитано',G('Красавица','Красавчик'),'Так держать','Огонь','Вот это да','Тело запомнит',G('Умница','Молодец'),'Форма растёт','Сильно'];
 
 function info(ds){
   const n=diff(S.start,ds),w=Math.max(1,Math.floor(n/7)+1),wd=parse(ds).getDay(),p=P();
@@ -1094,7 +1094,7 @@ function quests(ds){
              :{t:'Пробежка',s:`Неделя ${I.rw}: ${r[0]}. Сначала 5 минут шагом.`+(p.chrono==='lark'?' Лучше с утра.':'')})
     :(I.wd===0?{t:'Прогулка '+sun+' минут',s:'Спокойный темп, музыка или подкаст. День восстановления.'}
               :{t:'Прогулка '+wk+' минут',s:'Быстрым шагом, до лёгкой одышки.'+(has('life','dog')?' Можно с собакой.':has('life','shops')?' Можно совместить с магазином.':'')});
-  const clean=has('food','sweets')?{t:'Сладкое: максимум одна порция за день',s:'Одна порция это нормально. Опасна вторая и третья подряд.'}
+  const clean=has('food','sweets')?{t:'Сладкое: максимум одна порция за день',s:'Одна порция в день это нормально. Сложнее остановиться на второй и третьей.'}
     :has('food','soda')?{t:'Без сладкой газировки',s:'Газировка без сахара или вода с лимоном. Самый лёгкий минус 200-400 ккал.'}
     :{t:'Без перекусов из пачки',s:'Захотелось перекусить: фрукт, йогурт, горсть орехов.'};
   return [
@@ -1115,7 +1115,7 @@ function bonuses(){
   if(has('food','delivery'))B.push({id:'home',xp:10,t:'Ни одной доставки за день',s:'Готовое из магазина считается: курица-гриль, салат, творог.'});
   if(has('food','night'))B.push({id:'night',xp:10,t:'Последняя еда за 2 часа до сна',s:'Голодно поздно: кефир или творог, это можно.'});
   if(has('food','soda')&&has('food','sweets'))B.push({id:'soda',xp:8,t:'Без сладкой газировки',s:'Газировка без сахара или вода с лимоном.'});
-  if(has('life','series'))B.push({id:'series',xp:10,t:'Серия в движении',s:st?'Посмотри серию, шагая на степпере.':'Каждые 5 минут серии: 10 приседаний или планка 30 секунд.'});
+  if(has('life','series'))B.push({id:'series',xp:10,t:'Сериал в движении',s:st?'Посмотри серию, шагая на степпере.':'Каждые 5 минут серии: 10 приседаний или планка 30 секунд.'});
   if(has('life','shops'))B.push({id:'walk',xp:10,t:G('Сходила','Сходил')+' по делам пешком',s:'Магазин, кафе, аптека. Шаги, которые не надо специально искать.'});
   if(has('life','dog'))B.push({id:'dog',xp:10,t:'Длинная прогулка с собакой',s:'30 минут и больше, быстрым шагом. Собака точно за.'});
   if(P().commute==='transport')B.push({id:'stop',xp:8,t:'Выйти на остановку раньше',s:'И дойти пешком. Плюс 1 000-1 500 шагов.'});
@@ -1185,16 +1185,16 @@ function ACH(){return [
   {id:'st3',t:'Три дня подряд',s:'Серия 3 дня',ok:s=>s.best>=3,i:I_FIRE},
   {id:'st7',t:'Неделя силы',s:'Серия 7 дней',ok:s=>s.best>=7,i:I_FIRE},
   {id:'st21',t:'Привычка',s:'Серия 21 день',ok:s=>s.best>=21,i:I_FIRE},
-  {id:'run10',t:'10 кардио',s:'Ноги помнят',ok:s=>s.runs>=10,i:I_BARS},
+  {id:'run10',t:'10 кардио-тренировок',s:'Ноги помнят',ok:s=>s.runs>=10,i:I_BARS},
   {id:'run27',t:'Вся программа',s:'27 кардио-тренировок',ok:s=>s.runs>=27,i:'M6 3v18M6 4h11l-2 4 2 4H6'},
   {id:'water7',t:'Водный баланс',s:'6 стаканов 7 дней',ok:s=>s.waterDays>=7,i:'M12 3s6 7 6 11a6 6 0 0 1-12 0c0-4 6-11 6-11z'},
   {id:'bonus',t:'Все бонусы дня',s:'Собрать все бонусы за день',ok:s=>s.bonusAll>=1,i:I_STAR},
   {id:'steps100',t:'100 000 шагов',s:'Это около 70 км',ok:s=>s.steps>=1e5,i:I_BARS},
   ...(squatsOn()?[{id:'sq100',t:'100 приседаний',s:'Между делом',ok:s=>s.sets*10>=100,i:I_SQ},{id:'sq1000',t:'1000 приседаний',s:'Ноги благодарят',ok:s=>s.sets*10>=1000,i:I_SQ}]:[]),
   ...(stepperOn()?[{id:'stp300',t:'Степпер: 5 часов',s:G('Шагала','Шагал')+' между делом',ok:s=>s.stp*10>=300,i:'M4 18h6l2-6h6M10 18l2-6'}]:[]),
-  {id:'w1',t:'Минус 1 кг',s:'По среднему',ok:s=>s.lost>=1,i:I_DOWN},
-  {id:'w3',t:'Минус 3 кг',s:'По среднему',ok:s=>s.lost>=3,i:I_DOWN},
-  {id:'w5',t:'Минус 5 кг',s:'По среднему',ok:s=>s.lost>=5,i:I_DOWN},
+  {id:'w1',t:'Минус 1 кг',s:'По среднему за неделю',ok:s=>s.lost>=1,i:I_DOWN},
+  {id:'w3',t:'Минус 3 кг',s:'По среднему за неделю',ok:s=>s.lost>=3,i:I_DOWN},
+  {id:'w5',t:'Минус 5 кг',s:'По среднему за неделю',ok:s=>s.lost>=5,i:I_DOWN},
   {id:'goal',t:'Цель',s:'Ты '+G('сделала','сделал')+' это',ok:s=>s.cur!=null&&s.cur<=S.goal,i:I_STAR},
   {id:'plank60',t:'Планка 60 секунд',s:'Стальной корпус',ok:s=>s.plank>=60,i:'M3 14h18M6 14l2-4h8l2 4'}
 ]}
@@ -1217,7 +1217,7 @@ function renderToday(){
   if(isToday&&st.used.includes(addD(TODAY,-1)))msg='Вчера сработала заморозка: серия жива. '+msg;
   $('coach').textContent=msg;
   $('ringFg').style.strokeDashoffset=553*(1-Math.min(1,base/maxAv));$('ringXp').textContent=xp;
-  $('ringMsg').innerHTML=dc===0?'Первая галочка самая важная. <b>Начни с самого лёгкого.</b>':odc===oq.length?'<b>Всё сделано.</b> Сегодня ты '+G('та','тот')+', кем хочешь стать.':dc>=DAY_OK?'<b>День засчитан в серию.</b> Каждое следующее дело это бонус.':'До зачёта дня в серию: ещё <b>'+(DAY_OK-dc)+' '+delo(DAY_OK-dc)+'</b>';
+  $('ringMsg').innerHTML=dc===0?'Первая галочка самая важная. <b>Начни с самого лёгкого.</b>':odc===oq.length?'<b>Всё сделано.</b> Сегодня ты '+G('та','тот')+', кем хочешь стать.':dc>=DAY_OK?'<b>День засчитан в серию.</b> Дальше каждое дело добавляет XP.':'До зачёта дня в серию: ещё <b>'+(DAY_OK-dc)+' '+delo(DAY_OK-dc)+'</b>';
   $('chipStreak').innerHTML='Серия <b>'+st.streak+'</b>';$('chipDone').innerHTML='Дел <b>'+odc+'/'+oq.length+'</b>';
   $('chipFz').innerHTML=st.fz?'Заморозки <b>'+st.fz+'</b>':'До заморозки <b>'+(7-st.streak%7)+' '+dn(7-st.streak%7)+'</b>';
   const L=level(st.xp);$('lvlFill').style.width=(L.to?((st.xp-L.from)/(L.to-L.from)*100):100)+'%';
@@ -1258,9 +1258,11 @@ function renderPlan(){
   const prot=Math.round(cur*1.6),I=info(TODAY),m=p.sex==='m';
   $('planH').innerHTML='Минус '+f1(Math.max(0,S.startWeight-S.goal)).replace(',0','')+' кг <span class="accent">красиво</span>';
   let h=`<div class="stat card"><b>${f1(S.startWeight)} → ${f1(S.goal)}</b><span>кг</span></div>`;
-  h+=`<div class="stat card"><b>~${wk}</b><span>${wk%10===1&&wk%100!==11?'неделя':'недель'}, к ${ed.getDate()} ${MON[ed.getMonth()]} ${ed.getFullYear()}</span></div>`;
+  const wkw=(wk%10===1&&wk%100!==11)?'неделя':(wk%10>=2&&wk%10<=4&&(wk%100<12||wk%100>14))?'недели':'недель';
+  h+=`<div class="stat card"><b>~${wk}</b><span>${wkw}, к ${ed.getDate()} ${MON[ed.getMonth()]} ${ed.getFullYear()}</span></div>`;
   h+=`<div class="stat card"><b>${prot} г</b><span>белка в день</span></div>`;
-  h+=`<div class="stat card"><b>${fmt(I.steps)}</b><span>шагов сейчас, потом 8 000</span></div>`;
+  const stepMax=p.day==='feet'?10000:8000;
+  h+=`<div class="stat card"><b>${fmt(I.steps)}</b><span>${I.steps>=stepMax?'шагов в день':'шагов сейчас, потом '+fmt(stepMax)}</span></div>`;
   $('calcCard').innerHTML='';
   if(S.height){const hm=S.height/100,bmr=10*cur+6.25*S.height-5*(S.age||25)+(m?5:-161),kcal=Math.max(m?1500:1200,Math.round((bmr*1.4-400)/50)*50);
     h+=`<div class="stat card"><b>~${fmt(kcal)}</b><span>ккал в день</span></div>`;
@@ -1373,7 +1375,7 @@ function renderAll(){LI=level(stats().xp).i;renderToday();renderPlan();renderPro
 function openPay(afterTrial){
   const promo=OFFER.seats==null||OFFER.seats>0;
   $('payPrice').textContent=(promo?699:(OFFER.full||999))+' ₽';$('payOld').hidden=!promo;
-  $('paySeats').textContent=promo?(OFFER.seats!=null?'Осталось '+OFFER.seats+' из 50 мест по этой цене':'Цена для первых 50'):'Доступ навсегда';
+  $('paySeats').textContent=promo?(OFFER.seats!=null?'Осталось '+OFFER.seats+' из 50 мест по этой цене':'Цена для первых 50 покупателей'):'Доступ навсегда';
   $('payLead').textContent=afterTrial?'Есть первая галочка! Так выглядит каждый день в Level Up: дела, XP, серия и уровни. Открой полный доступ и продолжай.':'Твой план готов. Чтобы отмечать задания, копить XP, держать серию и видеть свой прогресс, открой полный доступ.';
   $('pay').classList.add('show');haptic(false);
 }
@@ -1388,8 +1390,8 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-demo]');if
   if(k==='xp'){sfx('tick');vib('medium');floatXP($('lvTrack'),30);toast(rnd(PRAISE()),30);const tr=$('lvTrack');tr.classList.add('bump');setTimeout(()=>tr.classList.remove('bump'),700)}
   else if(k==='day'){toast('День засчитан в серию: '+(st.streak+1)+' '+dn(st.streak+1));setTimeout(()=>{sfx('day');vib('win')},180)}
   else if(k==='perfect'){toast('Идеальный день. Я тобой горжусь.');setTimeout(()=>{sfx('win');vib('win');confetti(80)},180)}
-  else if(k==='level'){const n=Math.min(LEVELS.length-1,L.i+1);overlay('Ура! Новый уровень','<span class="accent">'+LEVELS[n][1]+'</span>','Открыто: бонус «Степпер». Ты '+G('прокачалась','прокачался')+'! Каждая галочка двигает тебя вперёд, а тело растёт следом.',String(n+1))}
-  else if(k==='ach')overlay('Новая награда','Неделя <span class="accent">силы</span>','Серия 7 дней. Это уже не случайность, это ты.');
+  else if(k==='level'){const n=Math.min(LEVELS.length-1,L.i+1);overlay('Ура! Новый уровень','<span class="accent">'+LEVELS[n][1]+'</span>','Открыто: бонус «Степпер». Ты '+G('прокачалась','прокачался')+'! Каждая галочка двигает тебя вперёд, а тело подтягивается следом.',String(n+1))}
+  else if(k==='ach')overlay('Новая награда','Неделя <span class="accent">силы</span>','Серия 7 дней. Награда твоя, так держать!');
   else if(k==='freeze')overlay('Награда за серию','Заморозка<br><span class="accent">получена</span>','7 дней подряд! Если однажды пропустишь день, заморозка сохранит серию. Копится до двух.');
   else if(k==='paid')overlay('Доступ открыт','Level Up<br><span class="accent">навсегда</span>','Спасибо! Теперь все задания, уровни и прогресс твои. Начинаем день 1.');
   else if(k==='pay')openPay(true);
@@ -1421,9 +1423,9 @@ function commit(before){
   fresh.forEach(a=>S.ach.push(a.id));if(fresh.length)save();
   renderAll();
   const oq=openQuests(view),odc=oq.filter(q=>isDone(view,q)).length;
-  if(L1.i>L0.i){const u=unlockedBetween(L0.i,L1.i);overlay('Ура! Новый уровень','<span class="accent">'+L1.name+'</span>',(u.length?'Открыто: '+u.join(', ')+'. ':'')+'Ты '+G('прокачалась','прокачался')+'! Каждая галочка двигает тебя вперёд, а тело растёт следом.',String(L1.i+1))}
+  if(L1.i>L0.i){const u=unlockedBetween(L0.i,L1.i);overlay('Ура! Новый уровень','<span class="accent">'+L1.name+'</span>',(u.length?'Открыто: '+u.join(', ')+'. ':'')+'Ты '+G('прокачалась','прокачался')+'! Каждая галочка двигает тебя вперёд, а тело подтягивается следом.',String(L1.i+1))}
   else if(st.fz>before.fz)overlay('Награда за серию','Заморозка<br><span class="accent">получена</span>','7 дней подряд! Если однажды пропустишь день, заморозка сохранит серию. Копится до двух.');
-  else if(fresh.length)overlay('Новая награда',fresh[0].t.replace(/(\S+)$/,'<span class="accent">$1</span>'),fresh[0].s+'. Это уже не случайность, это ты.');
+  else if(fresh.length)overlay('Новая награда',fresh[0].t.replace(/(\S+)$/,'<span class="accent">$1</span>'),fresh[0].s+'. Награда твоя, так держать!');
   else if(before.dc<DAY_OK&&doneCount(view)>=DAY_OK&&view===TODAY){toast('День засчитан в серию: '+st.streak+' '+dn(st.streak));setTimeout(()=>{sfx('day');vib('win')},180)}
   else if(before.odc<oq.length&&odc===oq.length){toast('Идеальный день. Я тобой горжусь.');setTimeout(()=>{sfx('win');vib('win');confetti(80)},180)}
 }
@@ -1449,7 +1451,7 @@ document.addEventListener('click',e=>{
     const b=snap(),r=rec(view),id=q.dataset.q,qq=quests(view).concat(bonuses()).find(x=>x.id===id);if(!qq)return;
     // демо: одно пробное задание можно отметить, потом экран оплаты
     if(demo()){if(S.trial){openPay();return}S.trial=id}
-    r.done[id]=!r.done[id];
+    if(r.done[id])delete r.done[id];else r.done[id]=true;  // снятая галочка удаляется, а не хранится как false
     if(r.done[id]){toast(rnd(PRAISE()),qq.xp);sfx('tick');vib('medium')}else{sfx('untick');vib('light')}
     commit(b);const el=document.querySelector(`.q[data-q="${id}"]`);if(el&&r.done[id]){el.classList.add('pop');floatXP(el,qq.xp)}
     if(demo())setTimeout(()=>openPay(true),1800);
@@ -1651,9 +1653,9 @@ function obCheck(){
     if(!h||h<120||h>230)return err('Впиши рост в сантиметрах, например 170.');
     if(!w||w<35||w>250||!g||g<35||g>250)return err('Впиши вес и цель в килограммах, например 70 и 62.');
     if(g>=w)return err('Цель должна быть меньше текущего веса.');}
-  if(obStep===2&&!pick('day').length)return err('Выбери, чем ты занят большую часть дня.');
+  if(obStep===2&&!pick('day').length)return err('Выбери, как обычно проходит твой день.');
   if(obStep===2&&!pick('commute').length)return err('Выбери, как передвигаешься по городу.');
-  if(obStep===2&&!pick('time').length)return err('Выбери, сколько времени готов тратить на задания.');
+  if(obStep===2&&!pick('time').length)return err('Выбери, сколько времени в день есть на задания.');
   if(obStep===3&&!pick('run').length)return err('Выбери один вариант.');
   if(obStep===4&&!pick('chrono').length)return err('Выбери режим сна.');
   return true;
