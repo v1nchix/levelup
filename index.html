@@ -598,7 +598,7 @@ input,select{font-size:16px}
       <h3>Тема и звук</h3>
       <p class="small" style="margin-top:6px">Быстро переключить можно кнопками вверху экрана.</p>
       <div class="opts" id="themeOpts" style="margin-top:14px"><button class="opt" data-theme="auto">Как в Телеграме</button><button class="opt" data-theme="dark">Тёмная</button><button class="opt" data-theme="light">Светлая</button></div>
-      <div class="opts" id="soundOpts" style="margin-top:8px"><button class="opt" data-sound="glass">Звуки: стекло</button><button class="opt" data-sound="game">Звуки: 8-бит</button><button class="opt" data-sound="off">Без звука</button></div>
+      <div class="opts" id="soundOpts" style="margin-top:8px"><button class="opt" data-sound="glass">Звуки: стекло</button><button class="opt" data-sound="harp">Звуки: арфа</button><button class="opt" data-sound="game">Звуки: 8-бит</button><button class="opt" data-sound="off">Без звука</button></div>
       <div class="opts" style="margin-top:8px"><button class="opt" data-try="tick">▶ Галочка</button><button class="opt" data-try="day">▶ День засчитан</button><button class="opt" data-try="win">▶ Новый уровень</button></div>
     </div>
   </div>
@@ -688,7 +688,9 @@ input,select{font-size:16px}
 
   <section class="onb-step on" data-s="0">
     <span class="tag">Шаг 1 из 5</span>
-    <div class="opts" data-g="theme" data-single style="margin:0 0 18px"><button class="opt" data-v="dark">Тёмная тема</button><button class="opt" data-v="light">Светлая тема</button></div>
+    <div class="opts" data-g="theme" data-single style="margin:0 0 10px"><button class="opt" data-v="dark">Тёмная тема</button><button class="opt" data-v="light">Светлая тема</button></div>
+    <div class="olabel" style="margin-top:6px">Звуки · нажми, чтобы послушать</div>
+    <div class="opts" data-g="snd" data-single style="margin-bottom:18px"><button class="opt" data-v="glass">Стекло</button><button class="opt" data-v="harp">Арфа</button><button class="opt" data-v="game">8-бит</button><button class="opt" data-v="off">Без звука</button></div>
     <h2>Давай <span class="accent">знакомиться</span></h2>
     <p class="lead">Пять коротких вопросов, и Level Up соберёт план под твою жизнь. Ответы видишь только ты.</p>
     <div class="olabel">Пол</div>
@@ -779,7 +781,7 @@ input,select{font-size:16px}
 const KEY='levelup.v1';
 // Версия сборки: проставляется скриптом deploy-app.ps1. Телеграм любит показывать старую копию из кэша,
 // поэтому при открытии приложение сверяет версию с сайтом и, если вышла новая, перезагружается.
-const BUILD='20261004-231724';
+const BUILD='20261004-232319';
 async function checkUpdate(){
   if(BUILD==='dev'||location.protocol==='file:')return;
   try{const t=await (await fetch('./?b='+Date.now(),{cache:'no-store'})).text(),m=t.match(/BUILD\s*=\s*'(\d{8}-\d{6})'/);
@@ -830,7 +832,7 @@ document.getElementById('themeBtn').onclick=()=>{setTheme(isLight()?'dark':'ligh
 applyTheme();
 
 // звуки: короткие синтезированные сигналы, без файлов. Два набора: игровые (8-бит) и мягкие.
-let SNDMODE='glass';try{const v=localStorage.getItem(KEY+'.sound');if(v==='0'||v==='off')SNDMODE='off';else if(v==='game')SNDMODE='game'}catch(e){}
+let SNDMODE='glass';try{const v=localStorage.getItem(KEY+'.sound');if(v==='0'||v==='off')SNDMODE='off';else if(v==='game'||v==='harp')SNDMODE=v}catch(e){}
 let SND=SNDMODE!=='off',LASTMODE=SNDMODE==='off'?'glass':SNDMODE;
 let AC=null;
 function audio(){try{if(!AC)AC=new (window.AudioContext||window.webkitAudioContext)();if(AC.state!=='running')AC.resume()}catch(e){AC=null}return AC}
@@ -860,7 +862,21 @@ function tap(start,vol,freq){const a=audio();if(!a)return;const t=a.currentTime+
   s.connect(bp);bp.connect(g);g.connect(a.destination);s.start(t)}
 function chord(fs,start,dur,vol){const a=audio();if(!a)return;const t=a.currentTime+start;fs.forEach(f=>{const o=a.createOscillator(),g=a.createGain();o.type='sine';o.frequency.value=f;
   g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+.25);g.gain.exponentialRampToValueAtTime(.0001,t+dur);o.connect(g);g.connect(a.destination);g.connect(reverb(a));o.start(t);o.stop(t+dur+.05)})}
+// щипок струны (для «Арфы»): основной тон и обертоны, тембр темнеет по мере затухания
+function pluck(f,start,dur,vol,bright){const a=audio();if(!a)return;const t=a.currentTime+start,lp=a.createBiquadFilter();lp.type='lowpass';
+  lp.frequency.setValueAtTime(bright||6000,t);lp.frequency.exponentialRampToValueAtTime(900,t+dur);
+  [[1,1],[2,.32],[3.01,.12],[5.4,.05]].forEach(([r,v])=>{const o=a.createOscillator(),g=a.createGain(),d=dur*(r>2?.35:1);o.frequency.value=f*r;
+    g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol*v,t+.003);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g);g.connect(lp);o.start(t);o.stop(t+d+.05)});
+  lp.connect(a.destination);lp.connect(reverb(a))}
+// Наборы звуков (выбрала владелица 05.10.2026): стекло по умолчанию, арфа, 8-бит
 const SETS={
+  harp:{
+    tick:()=>{pluck(1047,0,.9,.12);pluck(1319,.05,.9,.1);pluck(1568,.1,1,.1)},
+    untick:()=>{tap(0,.22,1300)},
+    pop:()=>{tap(0,.3,2700)},
+    day:()=>{[784,988,1175,1568].forEach((f,i)=>pluck(f,i*.06,1,.11))},
+    win:()=>{[523,659,784,1047,1319,1568,2093].forEach((f,i)=>pluck(f,i*.055,1.3,.1,6500));chord([262,392,523],.4,2,.02)}
+  },
   glass:{
     tick:()=>{bell(1568,0,.55,.085);bell(2093,.085,.8,.075)},                       // галочка: два стеклянных «динь» вверх
     untick:()=>{tap(0,.22,1300)},                                                     // снять галочку: глухой тап
@@ -1566,6 +1582,7 @@ function obOpen(){
   document.querySelectorAll('#onb .opts').forEach(g=>{const v=p[g.dataset.g];g.querySelectorAll('.opt').forEach(o=>o.classList.toggle('on',Array.isArray(v)?v.includes(o.dataset.v):v!=null&&String(v)===o.dataset.v))});
   $('oOk').checked=!!S.setup;
   document.querySelectorAll('#onb [data-g="theme"] .opt').forEach(o=>o.classList.toggle('on',o.dataset.v===(isLight()?'light':'dark')));
+  document.querySelectorAll('#onb [data-g="snd"] .opt').forEach(o=>o.classList.toggle('on',o.dataset.v===SNDMODE));
   if(S.setup){$('oA').value=S.age||'';$('oH').value=S.height||'';$('oW').value=f1(S.startWeight);$('oG').value=f1(S.goal)}
   obGo(0);$('onb').classList.add('show');
 }
@@ -1575,7 +1592,9 @@ function obGo(i){obStep=i;document.querySelectorAll('.onb-step').forEach(s=>s.cl
 document.addEventListener('click',e=>{const o=e.target.closest('#onb .opt');if(!o)return;const g=o.parentElement;
   if(g.hasAttribute('data-single'))g.querySelectorAll('.opt').forEach(x=>x.classList.toggle('on',x===o));else o.classList.toggle('on');
   if(g.dataset.g==='theme')setTheme(o.dataset.v);
-  vib('select');sfx('pop')});
+  vib('select');
+  if(g.dataset.g==='snd'){setSound(o.dataset.v);return}  // выбор звука сразу проигрывает его
+  sfx('pop')});
 const err=t=>{$('oErr').textContent=t;haptic(true);return false};
 function obCheck(){
   if(obStep===0){const a=num($('oA').value),h=num($('oH').value),w=num($('oW').value),g=num($('oG').value);
