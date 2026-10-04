@@ -302,6 +302,12 @@ input,select{font-size:16px}
 .onb-nav .solid{flex:1}
 .profile{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
 [hidden]{display:none!important}
+.disc{padding:16px 18px;border:1px solid rgba(255,255,255,.18);border-radius:14px;background:rgba(255,255,255,.04)}
+.disc p{font-size:13px;line-height:1.55;color:var(--muted)}
+.disc p b{color:#fff;font-weight:500}
+.disc .st-tg{align-items:flex-start;font-size:13px;margin-top:14px}
+.disc .st-tg input{flex:none;margin-top:1px}
+.disc a{color:#fff}
 /* закрытые дела */
 .q.locked{opacity:.5;border-style:dashed;cursor:default}
 .q.locked .chk{border-color:rgba(255,255,255,.15)}
@@ -362,6 +368,7 @@ input,select{font-size:16px}
   <div class="subh"><div><h3>Бонусы для быстрых уровней</h3><p class="small" style="margin-top:6px">Собраны под твой образ жизни. В серию не идут, но уровень растёт быстрее.</p></div><span class="xp" id="bonusXp">+0 XP</span></div>
   <div class="quests" id="bonus"></div>
 
+  <p class="small" style="margin-top:28px;text-align:center">Level Up это игра для поддержки режима, а не медицинская услуга. Перед нагрузками при проблемах со здоровьем посоветуйся с врачом. <a href="terms.html" target="_blank" style="color:#fff">Условия</a></p>
   <div class="logrow">
     <div class="card">
       <h3>Вес утром</h3>
@@ -381,6 +388,7 @@ input,select{font-size:16px}
   <span class="tag">План</span>
   <h2 id="planH">План <span class="accent">под тебя</span></h2>
   <p class="lead">Без голодовок. Темп <b>0,5 кг в неделю</b>: так уходит жир, а не мышцы. Кардио даёт лёгкость и выносливость, силовая даёт форму.</p>
+  <div class="disc" style="margin-top:20px"><p><b>Не медицинский сервис.</b> План собран по общим принципам здорового образа жизни и не является назначением врача, диетолога или программой профессионального тренера. «Тренер» в приложении это игровой персонаж. Плохое самочувствие, боль, головокружение: остановись и обратись к врачу.</p></div>
   <div class="stats" id="planStats"></div>
   <div id="calcCard"></div>
 
@@ -586,6 +594,10 @@ input,select{font-size:16px}
       <div class="fld"><label for="oW">Вес сейчас, кг</label><input id="oW" type="text" inputmode="decimal"></div>
       <div class="fld"><label for="oG">Цель, кг</label><input id="oG" type="text" inputmode="decimal"></div>
     </div>
+    <div class="disc" style="margin-top:22px">
+      <p><b>Level Up это игра, а не медицинская услуга.</b> Задания и цифры носят общий характер и не заменяют консультацию врача или профессионального тренера. Без согласования с врачом не подходит при беременности, болезнях сердца и сосудов, диабете, травмах суставов и позвоночника, расстройствах пищевого поведения.</p>
+      <label class="st-tg" for="oOk"><input type="checkbox" id="oOk"> <span>Понимаю. При проблемах со здоровьем сначала посоветуюсь с врачом. <a href="terms.html" target="_blank">Условия</a></span></label>
+    </div>
   </section>
 
   <section class="onb-step" data-s="1">
@@ -773,7 +785,7 @@ function COACH(){const L=[
   'Вода, белок, сон. Три скучные вещи, из которых делается сильное тело.',
   'Через месяц ты скажешь спасибо '+G('себе сегодняшней','себе сегодняшнему')+'. Дай повод.',
   'Весы врут каждый день, среднее за неделю почти никогда. Смотри на тренд.',
-  'Тяжело? Значит, работает. Дыши и считай секунды.',
+  'Тяжело, но терпимо? Значит, работает. А если больно или кружится голова, остановись: здоровье важнее серии.',
   'Мотивация приходит после действия, а не до. Начни с одного стакана воды.',
   'Не сравнивай себя с чужими фото. Сравнивай с собой из первой недели.',
   'Маленькая победа на сегодня: просто надень кроссовки. Дальше пойдёт само.',
@@ -981,7 +993,7 @@ function renderPlan(){
   if(S.height){const hm=S.height/100,bmr=10*cur+6.25*S.height-5*(S.age||25)+(m?5:-161),kcal=Math.max(m?1500:1200,Math.round((bmr*1.4-400)/50)*50);
     h+=`<div class="stat card"><b>~${fmt(kcal)}</b><span>ккал в день</span></div>`;
     const bmiG=S.goal/(hm*hm),minW=Math.ceil(18.5*hm*hm*2)/2,okW=Math.round(20*hm*hm*2)/2;
-    $('calcCard').innerHTML=`<div class="card ${bmiG<18.5?'warn':''}" style="margin-top:14px"><h3>${bmiG<18.5?'Про цель '+f1(S.goal)+' кг':'Цель в норме'}</h3><p class="small" style="font-size:13px;color:var(--muted)">${bmiG<18.5?`При росте ${S.height} см вес ${f1(S.goal)} кг ниже медицинской нормы (индекс массы ${f1(bmiG)}, норма от 18,5). Минимум здорового веса около <b style="color:#fff">${f1(minW)} кг</b>. Предлагаю цель ${f1(Math.max(minW,okW))} кг: тело будет подтянутым, без потери сил${m?'':' и цикла'}.`:`При росте ${S.height} см ${f1(S.goal)} кг это индекс массы ${f1(bmiG)}, в пределах нормы.`} Калории посчитаны по формуле Миффлина: минус 400 ккал от расхода с учётом плана. Белок: 1,6 г на кг веса.</p></div>`;
+    $('calcCard').innerHTML=`<div class="card ${bmiG<18.5?'warn':''}" style="margin-top:14px"><h3>${bmiG<18.5?'Про цель '+f1(S.goal)+' кг':'Цель в норме'}</h3><p class="small" style="font-size:13px;color:var(--muted)">${bmiG<18.5?`При росте ${S.height} см вес ${f1(S.goal)} кг ниже медицинской нормы (индекс массы ${f1(bmiG)}, норма от 18,5). По индексу массы тела нижняя граница нормы для твоего роста около <b style="color:#fff">${f1(minW)} кг</b>. Цель ниже нормы стоит обсудить с врачом.`:`При росте ${S.height} см ${f1(S.goal)} кг это индекс массы ${f1(bmiG)}, в пределах нормы.`} Калории и белок посчитаны по общим формулам (Миффлин, 1,6 г белка на кг веса). Это ориентир, а не назначение: индивидуальное питание подбирает врач или диетолог.</p></div>`;
   }
   $('planStats').innerHTML=h;
 
@@ -1246,6 +1258,7 @@ const pick=k=>[...document.querySelectorAll(`#onb .opts[data-g="${k}"] .opt.on`)
 function obOpen(){
   const p=S.p||{};
   document.querySelectorAll('#onb .opts').forEach(g=>{const v=p[g.dataset.g];g.querySelectorAll('.opt').forEach(o=>o.classList.toggle('on',Array.isArray(v)?v.includes(o.dataset.v):v!=null&&String(v)===o.dataset.v))});
+  $('oOk').checked=!!S.setup;
   if(S.setup){$('oA').value=S.age||'';$('oH').value=S.height||'';$('oW').value=f1(S.startWeight);$('oG').value=f1(S.goal)}
   obGo(0);$('onb').classList.add('show');
 }
@@ -1260,6 +1273,7 @@ function obCheck(){
     if(!pick('sex').length)return err('Выбери пол: от него зависят калории и упражнения.');
     if(!a)return err('Впиши возраст.');
     if(a<18)return err('Level Up для тех, кому уже есть 18.');
+    if(!$('oOk').checked)return err('Отметь, что понимаешь: Level Up не медицинский сервис.');
     if(!h||h<120||h>230)return err('Впиши рост в сантиметрах, например 170.');
     if(!w||w<35||w>250||!g||g<35||g>250)return err('Впиши вес и цель в килограммах, например 70 и 62.');
     if(g>=w)return err('Цель должна быть меньше текущего веса.');}
