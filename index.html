@@ -69,11 +69,8 @@ body::before{content:"";position:fixed;width:80vw;height:80vw;max-width:1100px;m
 .lvrow{flex-basis:100%;display:flex;align-items:center;gap:10px}
 .lvpill{flex:none;padding:6px 11px;border-radius:100px;background:var(--hi);color:var(--on-hi);font-family:var(--wide);font-variation-settings:'wdth' 151,'opsz' 144;font-size:9px;letter-spacing:.16em;font-weight:800}
 .lvtrack{flex:1;height:10px;border-radius:10px;background:rgba(var(--ink),.08);overflow:hidden;position:relative}
-.lvtrack i{position:absolute;left:0;top:0;bottom:0;border-radius:10px;background:linear-gradient(90deg,var(--glow-2),var(--hi));box-shadow:0 0 14px rgba(var(--ink),.55);transition:width 1.1s var(--ease)}
-.lvtrack i::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(var(--ink),.55),transparent);transform:translateX(-100%);animation:shine 2.8s ease-in-out infinite}
-@keyframes shine{60%,100%{transform:translateX(100%)}}
-.lvtrack.bump{animation:bump .6s var(--ease)}
-@keyframes bump{40%{transform:scaleY(1.6)}}
+.lvtrack i{position:absolute;left:0;top:0;bottom:0;border-radius:10px;background:linear-gradient(90deg,var(--glow-2),var(--hi));box-shadow:0 0 10px rgba(var(--ink),.35);transition:width 1.1s var(--ease),box-shadow .6s}
+.lvtrack.bump i{box-shadow:0 0 18px rgba(var(--ink),.7)}
 .lvxp{flex:none;font-family:var(--wide);font-variation-settings:'wdth' 151,'opsz' 144;font-size:9px;letter-spacing:.12em;color:var(--muted);font-variant-numeric:tabular-nums}
 .ringcard .lvlbar{display:none}
 /* всплывающие +XP и конфетти */
@@ -780,7 +777,7 @@ input,select{font-size:16px}
 const KEY='levelup.v1';
 // Версия сборки: проставляется скриптом deploy-app.ps1. Телеграм любит показывать старую копию из кэша,
 // поэтому при открытии приложение сверяет версию с сайтом и, если вышла новая, перезагружается.
-const BUILD='20261004-230634';
+const BUILD='20261004-230915';
 async function checkUpdate(){
   if(BUILD==='dev'||location.protocol==='file:')return;
   try{const t=await (await fetch('./?b='+Date.now(),{cache:'no-store'})).text(),m=t.match(/BUILD\s*=\s*'(\d{8}-\d{6})'/);
@@ -831,10 +828,14 @@ document.getElementById('themeBtn').onclick=()=>{setTheme(isLight()?'dark':'ligh
 applyTheme();
 
 // звуки: короткие синтезированные сигналы, без файлов. Два набора: игровые (8-бит) и мягкие.
-let SNDMODE='game';try{const v=localStorage.getItem(KEY+'.sound');if(v==='0')SNDMODE='off';else if(v)SNDMODE=v}catch(e){}
+let SNDMODE='game';try{const v=localStorage.getItem(KEY+'.sound');if(v==='0'||v==='off')SNDMODE='off';else if(v==='soft')SNDMODE='soft'}catch(e){}
 let SND=SNDMODE!=='off',LASTMODE=SNDMODE==='off'?'game':SNDMODE;
 let AC=null;
-function audio(){try{if(!AC)AC=new (window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume()}catch(e){AC=null}return AC}
+function audio(){try{if(!AC)AC=new (window.AudioContext||window.webkitAudioContext)();if(AC.state!=='running')AC.resume()}catch(e){AC=null}return AC}
+// телефоны разрешают звук только после касания: при первом касании «будим» звук тихим пустым сигналом
+function unlockAudio(){const a=audio();if(!a)return;try{const b=a.createBuffer(1,1,22050),s=a.createBufferSource();s.buffer=b;s.connect(a.destination);s.start(0)}catch(e){}
+  if(a.state==='running'){['touchend','pointerdown','click'].forEach(ev=>document.removeEventListener(ev,unlockAudio,true))}}
+['touchend','pointerdown','click'].forEach(ev=>document.addEventListener(ev,unlockAudio,true));
 function tone(f,start,dur,vol,type){const a=audio();if(!a)return;const o=a.createOscillator(),g=a.createGain(),t=a.currentTime+start;
   o.type=type||'sine';o.frequency.setValueAtTime(f,t);g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+.012);g.gain.exponentialRampToValueAtTime(.0001,t+dur);
   o.connect(g);g.connect(a.destination);o.start(t);o.stop(t+dur+.02)}
@@ -1159,7 +1160,7 @@ function renderToday(){
   $('lvPill').textContent='УР. '+(L.i+1);
   $('lvFill').style.width=Math.max(3,L.to?((st.xp-L.from)/(L.to-L.from)*100):100)+'%';
   $('lvXp').textContent=L.to?fmt(st.xp-L.from)+' / '+fmt(L.to-L.from)+' XP':fmt(st.xp)+' XP';
-  if(window._lastXP!=null&&st.xp>window._lastXP){const tr=$('lvTrack'),rb=$('ringXp');[tr,rb].forEach(el=>{el.classList.remove('bump');void el.offsetWidth;el.classList.add('bump')})}
+  if(window._lastXP!=null&&st.xp>window._lastXP){const tr=$('lvTrack'),rb=$('ringXp');[tr,rb].forEach(el=>{el.classList.remove('bump');void el.offsetWidth;el.classList.add('bump');setTimeout(()=>el.classList.remove('bump'),700)})}
   window._lastXP=st.xp;
 
   $('quests').innerHTML=qs.map(q=>{let ctl='';
