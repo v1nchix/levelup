@@ -777,7 +777,7 @@ input,select{font-size:16px}
 const KEY='levelup.v1';
 // Версия сборки: проставляется скриптом deploy-app.ps1. Телеграм любит показывать старую копию из кэша,
 // поэтому при открытии приложение сверяет версию с сайтом и, если вышла новая, перезагружается.
-const BUILD='20261004-230915';
+const BUILD='20261004-231158';
 async function checkUpdate(){
   if(BUILD==='dev'||location.protocol==='file:')return;
   try{const t=await (await fetch('./?b='+Date.now(),{cache:'no-store'})).text(),m=t.match(/BUILD\s*=\s*'(\d{8}-\d{6})'/);
@@ -1445,33 +1445,70 @@ document.addEventListener('visibilitychange',()=>{if(TM&&document.visibilityStat
 
 // ---------- карточка для сторис ----------
 function rr(x,X,Y,W,H,R){x.beginPath();x.moveTo(X+R,Y);x.arcTo(X+W,Y,X+W,Y+H,R);x.arcTo(X+W,Y+H,X,Y+H,R);x.arcTo(X,Y+H,X,Y,R);x.arcTo(X,Y,X+W,Y,R);x.closePath()}
+// Карточка 1080×1920 в стиле приложения. Всё важное внутри безопасной зоны сторис (сверху 200, снизу 220 px перекрывает интерфейс Инстаграма).
 async function drawStory(showW){
-  try{await Promise.all(["900 100px 'Roboto Flex'","200 100px 'Roboto Flex'","700 40px 'Roboto Flex'"].map(f=>document.fonts.load(f)))}catch(e){}
-  const c=document.createElement('canvas');c.width=1080;c.height=1920;const x=c.getContext('2d'),st=stats(),L=level(st.xp);
-  const wide=()=>{try{x.fontStretch='ultra-expanded'}catch(e){}},sp=v=>{if('letterSpacing' in x)x.letterSpacing=v};
-  x.fillStyle='#050507';x.fillRect(0,0,1080,1920);
-  let g=x.createRadialGradient(920,260,0,920,260,1050);g.addColorStop(0,'rgba(200,205,220,.30)');g.addColorStop(1,'rgba(200,205,220,0)');x.fillStyle=g;x.fillRect(0,0,1080,1920);
-  g=x.createRadialGradient(120,1650,0,120,1650,800);g.addColorStop(0,'rgba(200,205,220,.10)');g.addColorStop(1,'rgba(200,205,220,0)');x.fillStyle=g;x.fillRect(0,0,1080,1920);
-  const im=x.getImageData(0,0,1080,1920),dd=im.data;for(let i=0;i<dd.length;i+=4){const n=(Math.random()-.5)*16;dd[i]+=n;dd[i+1]+=n;dd[i+2]+=n}x.putImageData(im,0,0);
-  wide();x.textBaseline='alphabetic';
-  x.font="600 30px 'Roboto Flex'";sp('9px');x.fillStyle='#f4f4f6';x.fillText('LEVEL UP',90,260);
-  const d=parse(TODAY);x.textAlign='right';x.fillStyle='#8a8a94';x.fillText((d.getDate()+' '+MON[d.getMonth()]).toUpperCase(),990,260);x.textAlign='left';
-  x.fillText('УРОВЕНЬ',90,420);
-  sp('0px');x.fillStyle='#ffffff';x.shadowColor='rgba(255,255,255,.4)';x.shadowBlur=70;x.font="900 400px 'Roboto Flex'";x.fillText(String(L.i+1),70,790);
-  let fs=130;x.font=`200 ${fs}px 'Roboto Flex'`;while(x.measureText(L.name).width>900&&fs>50){fs-=4;x.font=`200 ${fs}px 'Roboto Flex'`}
-  const tg=x.createLinearGradient(90,0,990,0);tg.addColorStop(0,'#ffffff');tg.addColorStop(1,'#c9ccd6');x.fillStyle=tg;x.shadowBlur=40;
-  x.save();x.translate(90,930);x.transform(1,0,-0.18,1,0,0);x.fillText(L.name,0,0);x.restore();x.shadowBlur=0;
-  const rows=[['СЕРИЯ',st.streak+' '+dn(st.streak)],['ВСЕГО XP',fmt(st.xp)],['ЗАСЧИТАНО ДНЕЙ',String(Object.keys(S.days).filter(goodDay).length)]];
-  if(showW&&st.lost>=0.1)rows.splice(1,0,['СБРОШЕНО','−'+f1(st.lost)+' кг']);
-  let y=1000;rows.forEach(r=>{rr(x,90,y,900,110,55);x.fillStyle='rgba(255,255,255,.05)';x.fill();x.strokeStyle='rgba(255,255,255,.16)';x.lineWidth=2;x.stroke();
-    x.font="600 24px 'Roboto Flex'";sp('7px');x.fillStyle='#8a8a94';x.fillText(r[0],140,y+66);
-    x.font="800 44px 'Roboto Flex'";sp('1px');x.fillStyle='#ffffff';x.textAlign='right';x.fillText(r[1],940,y+72);x.textAlign='left';y+=128});
-  const cells=28,cw=52,gap=10,ox=90+(900-(14*cw+13*gap))/2,oy=y+20;
-  for(let k=0;k<cells;k++){const ds=addD(TODAY,k-cells+1),cx=ox+(k%14)*(cw+gap),cy=oy+Math.floor(k/14)*(cw+gap);
-    let fill='rgba(255,255,255,.06)';if(ds>=S.start){const p=dayBase(ds)/BASE;fill=p>=1?'#ffffff':p>=.6?'rgba(255,255,255,.7)':p>=.35?'rgba(255,255,255,.42)':p>0?'rgba(255,255,255,.2)':'rgba(255,255,255,.06)'}
-    rr(x,cx,cy,cw,cw,12);x.fillStyle=fill;x.fill()}
-  x.font="600 24px 'Roboto Flex'";sp('7px');x.fillStyle='#8a8a94';x.fillText('ПОСЛЕДНИЕ 4 НЕДЕЛИ',90,oy+2*cw+gap+56);
-  x.font="800 34px 'Roboto Flex'";sp('2px');x.fillStyle='#ffffff';x.textAlign='right';x.fillText('@levelup_fit_bot',990,oy+2*cw+gap+58);x.textAlign='left';
+  const WF=(w,s,it)=>`${it?'italic ':''}ultra-expanded ${w} ${s}px 'Roboto Flex', sans-serif`;  // широкий срез, как в приложении
+  try{await Promise.all([WF(900,100),WF(800,100),WF(600,40),WF(200,100,1),WF(200,100)].map(f=>document.fonts.load(f)))}catch(e){}
+  const c=document.createElement('canvas');c.width=1080;c.height=1920;const x=c.getContext('2d'),st=stats(),L=level(st.xp),lt=isLight();
+  const C=lt?{bg:'#f2f2f4',fg:'#0b0b0f',mut:'#6a6a73',ink:'11,11,15',g1:'#0b0b0f',g2:'#5d606b',glow:'rgba(150,155,175,.30)',pill:'#0b0b0f',pillT:'#ffffff'}
+             :{bg:'#050507',fg:'#f4f4f6',mut:'#8a8a94',ink:'255,255,255',g1:'#ffffff',g2:'#b9bcc8',glow:'rgba(200,205,220,.26)',pill:'#ffffff',pillT:'#000000'};
+  const ink=a=>`rgba(${C.ink},${a})`;
+  try{x.fontStretch='ultra-expanded'}catch(e){}
+  x.textBaseline='alphabetic';
+  // разрядка вручную: свойство letterSpacing есть не во всех браузерах
+  const spaced=(t,X,Y,sp,align)=>{const w=[...t].reduce((a,ch)=>a+x.measureText(ch).width+sp,-sp);let cx=align==='right'?X-w:X;[...t].forEach(ch=>{x.fillText(ch,cx,Y);cx+=x.measureText(ch).width+sp});return w};
+  const M=96,R=1080-M,Wd=R-M;
+
+  // фон: тёмный с мягким пятном света
+  x.fillStyle=C.bg;x.fillRect(0,0,1080,1920);
+  let g=x.createRadialGradient(880,320,0,880,320,1000);g.addColorStop(0,C.glow);g.addColorStop(1,'rgba(0,0,0,0)');x.fillStyle=g;x.fillRect(0,0,1080,1920);
+  g=x.createRadialGradient(260,700,0,260,700,560);g.addColorStop(0,lt?'rgba(150,155,175,.14)':'rgba(200,205,220,.10)');g.addColorStop(1,'rgba(0,0,0,0)');x.fillStyle=g;x.fillRect(0,0,1080,1920);
+
+  // шапка
+  x.font=WF(700,30);x.fillStyle=C.fg;spaced('LEVEL UP',M,232,10);
+  const d=parse(TODAY);x.font=WF(600,24);x.fillStyle=C.mut;spaced((d.getDate()+' '+MON[d.getMonth()]).toUpperCase(),R,230,7,'right');
+  x.fillStyle=ink(.12);x.fillRect(M,262,Wd,2);
+
+  // уровень: огромная цифра и название
+  x.font=WF(600,26);x.fillStyle=C.mut;spaced('УРОВЕНЬ',M,372,12);
+  let ns=520;x.font=WF(900,ns);while(x.measureText(String(L.i+1)).width>Wd&&ns>200){ns-=20;x.font=WF(900,ns)}
+  g=x.createLinearGradient(0,400,0,780);g.addColorStop(0,C.g1);g.addColorStop(1,C.g2);
+  x.fillStyle=g;if(!lt){x.shadowColor='rgba(255,255,255,.28)';x.shadowBlur=90}x.fillText(String(L.i+1),M-14,770);x.shadowBlur=0;
+  let fs=118;x.font=WF(200,fs,1);while(x.measureText(L.name).width>Wd&&fs>56){fs-=4;x.font=WF(200,fs,1)}
+  g=x.createLinearGradient(M,0,R,0);g.addColorStop(0,C.g1);g.addColorStop(1,C.g2);x.fillStyle=g;
+  x.save();x.translate(M,880);x.transform(1,0,-0.16,1,0,0);x.fillText(L.name,0,0);x.restore();
+
+  // полоса до следующего уровня
+  const pr=L.to?(st.xp-L.from)/(L.to-L.from):1;
+  x.font=WF(600,22);x.fillStyle=C.mut;spaced(L.to?'ДО УРОВНЯ '+(L.i+2):'МАКСИМАЛЬНЫЙ УРОВЕНЬ',M,948,7);
+  if(L.to)spaced(fmt(st.xp-L.from)+' / '+fmt(L.to-L.from)+' XP',R,948,5,'right');
+  rr(x,M,968,Wd,22,11);x.fillStyle=ink(.1);x.fill();
+  rr(x,M,968,Math.max(22,Wd*pr),22,11);g=x.createLinearGradient(M,0,M+Wd,0);g.addColorStop(0,C.g2);g.addColorStop(1,C.g1);x.fillStyle=g;
+  if(!lt){x.shadowColor='rgba(255,255,255,.5)';x.shadowBlur=24}x.fill();x.shadowBlur=0;
+
+  // четыре плашки с цифрами
+  const days=Object.keys(S.days).filter(goodDay).length;
+  const cards=[['СЕРИЯ',String(st.streak),dn(st.streak)],['ВСЕГО XP',fmt(st.xp),''],['ЗАСЧИТАНО',String(days),dn(days)],
+    showW&&st.lost>=0.1?['СБРОШЕНО','−'+f1(st.lost),'кг']:['ИДЕАЛЬНЫХ',String(st.perfect),dn(st.perfect)]];
+  const cw=(Wd-24)/2,ch=186;
+  cards.forEach((cd,i)=>{const cx=M+(i%2)*(cw+24),cy=1030+Math.floor(i/2)*(ch+24);
+    rr(x,cx,cy,cw,ch,34);x.fillStyle=ink(lt?.05:.045);x.fill();x.strokeStyle=ink(.14);x.lineWidth=2;x.stroke();
+    x.font=WF(600,21);x.fillStyle=C.mut;spaced(cd[0],cx+34,cy+56,7);
+    let vs=78;x.font=WF(900,vs);while(x.measureText(cd[1]).width>cw-68-(cd[2]?110:0)&&vs>40){vs-=4;x.font=WF(900,vs)}
+    x.fillStyle=C.fg;x.fillText(cd[1],cx+34,cy+150);
+    if(cd[2]){const vw=x.measureText(cd[1]).width;x.font=`500 30px Manrope, sans-serif`;x.fillStyle=C.mut;x.fillText(cd[2],cx+34+vw+14,cy+148)}});
+
+  // календарь последних 4 недель
+  const gy=1490;x.font=WF(600,21);x.fillStyle=C.mut;spaced('ПОСЛЕДНИЕ 4 НЕДЕЛИ',M,gy,7);
+  const cs=52,gp=(Wd-14*cs)/13;
+  for(let k=0;k<28;k++){const ds=addD(TODAY,k-27),cx=M+(k%14)*(cs+gp),cy=gy+24+Math.floor(k/14)*(cs+gp);
+    let a=.07;if(ds>=S.start){const p=dayBase(ds)/BASE;a=p>=1?1:p>=.6?.72:p>=.35?.45:p>0?.22:.07}
+    rr(x,cx,cy,cs,cs,13);x.fillStyle=ink(a);x.fill()}
+
+  // подпись внизу, выше зоны ответа в сторис
+  const py=1652,pt='@levelup_fit_bot';x.font=WF(800,28);const pw=[...pt].reduce((a,ch)=>a+x.measureText(ch).width+2,-2)+64;
+  rr(x,M,py,pw,72,36);x.fillStyle=C.pill;x.fill();x.fillStyle=C.pillT;spaced(pt,M+32,py+47,2);
+  x.font=WF(600,21);x.fillStyle=C.mut;spaced('ИГРАЮ В ФОРМУ',R,py+44,7,'right');
   return c;
 }
 let stURL='',stJPG='';
