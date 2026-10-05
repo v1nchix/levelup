@@ -370,11 +370,15 @@ input,select{font-size:16px}
 .wo .th{font-family:var(--wide);font-variation-settings:'wdth' 151,'opsz' 144;font-size:9px;letter-spacing:.22em;color:var(--muted)}
 .figbox{margin-top:16px;border:1px solid var(--line);border-radius:16px;background:rgba(var(--ink),.03);aspect-ratio:1/1;max-width:100%}
 .fig{width:100%;height:100%;display:block}
-.fig line,.fig circle{stroke:var(--hi);stroke-width:4;stroke-linecap:round;fill:none}
-.fig circle{fill:var(--bg)}
-.fig .bk{opacity:.4}
-.fig .fl{stroke:rgba(var(--ink),.18);stroke-width:2}
-.fig .prop line{stroke:rgba(var(--ink),.35);stroke-width:3}
+.fig line{stroke-linecap:round;fill:none}
+.fig .fl{stroke:rgba(var(--ink),.16);stroke-width:1.2}
+.fig .prop line{stroke:rgba(var(--ink),.3);stroke-width:2.4}
+.fig .fsh{fill:rgba(var(--ink),.1)}
+.fig .gf path{fill:var(--fig-far)}
+.fig .gbo path,.fig .gao path{fill:none;stroke:var(--fig-line);stroke-width:1.3;stroke-linejoin:round}
+.fig .gbf path,.fig .gaf path{fill:var(--fig-body)}
+:root{--fig-body:#f1efeb;--fig-line:#8f8c86;--fig-far:#77777d}
+:root.light{--fig-body:#f6f4f0;--fig-line:#a29f99;--fig-far:#7b7b7b}
 @media(max-width:600px){.exr i{display:none}.exr{padding:11px 12px}}
 /* демо и оплата */
 .demo-bar{border-color:rgba(var(--ink),.3);background:rgba(var(--ink),.06)}
@@ -837,7 +841,7 @@ input,select{font-size:16px}
 const KEY='levelup.v1';
 // Версия сборки: проставляется скриптом deploy-app.ps1. Телеграм любит показывать старую копию из кэша,
 // поэтому при открытии приложение сверяет версию с сайтом и, если вышла новая, перезагружается.
-const BUILD='20261005-030812';
+const BUILD='20261005-032156';
 async function checkUpdate(){
   if(BUILD==='dev'||location.protocol==='file:')return;
   try{const t=await (await fetch('./?b='+Date.now(),{cache:'no-store'})).text(),m=t.match(/BUILD\s*=\s*'(\d{8}-\d{6})'/);
@@ -1197,22 +1201,68 @@ const POSE={
 };
 const PROPS={auspull:'<line x1="40" y1="41" x2="92" y2="41"/>',dips:'<line x1="12" y1="61" x2="38" y2="61"/><line x1="15" y1="61" x2="15" y2="91"/><line x1="35" y1="61" x2="35" y2="91"/>',
   wallpush:'<line x1="91" y1="6" x2="91" y2="91"/>',chest:'<line x1="21" y1="6" x2="21" y2="91"/>',bandrow:'<line x1="92" y1="30" x2="92" y2="91"/>'};
-function figure(name){const P2=POSE[name];if(!P2)return '';
-  const fill=o=>{const r={...o};['k','a','e','w'].forEach(j=>{if(!r[j+'2'])r[j+'2']=r[j]});return r};
-  const A=fill(P2[0]),B=fill({...P2[0],...P2[1]});
-  const v=(j,i)=>A[j][i]+';'+B[j][i]+';'+A[j][i];
-  const anim=(attr,j,i)=>`<animate attributeName="${attr}" values="${v(j,i)}" dur="2.6s" keyTimes="0;.5;1" calcMode="spline" keySplines=".45 0 .55 1;.45 0 .55 1" repeatCount="indefinite"/>`;
-  const seg=(j1,j2,cls)=>`<line class="${cls||''}" x1="${A[j1][0]}" y1="${A[j1][1]}" x2="${A[j2][0]}" y2="${A[j2][1]}">${anim('x1',j1,0)}${anim('y1',j1,1)}${anim('x2',j2,0)}${anim('y2',j2,1)}</line>`;
-  let g=seg('p','k2','bk')+seg('k2','a2','bk')+seg('s','e2','bk')+seg('e2','w2','bk');
-  g+=(A.m?seg('s','m')+seg('m','p'):seg('s','p'))+seg('p','k')+seg('k','a')+seg('s','e')+seg('e','w')+seg('s','h');
-  g+=`<circle r="6" cx="${A.h[0]}" cy="${A.h[1]}">${anim('cx','h',0)}${anim('cy','h',1)}</circle>`;
-  return `<svg class="fig" viewBox="0 0 100 100" role="img" aria-label="Схема движения"><line class="fl" x1="4" y1="91" x2="96" y2="91"/><g class="prop">${PROPS[name]||''}</g><g class="bod">${g}</g></svg>`}
+// фигура-манекен: ближние части светлые с общим контуром, дальние серые (как тень); кадры считаются в requestAnimationFrame
+const FIGFRONT=new Set(['sidelunge','jacks','butterfly']);   // вид спереди: стопы врозь, без хвостика
+let FIGS=null,FIGR=0;
+const f2=n=>n.toFixed(2);
+function cap(A,B,r1,r2){const dx=B[0]-A[0],dy=B[1]-A[1],L=Math.hypot(dx,dy)||1e-3,nx=-dy/L,ny=dx/L;
+  return `M${f2(A[0]+nx*r1)} ${f2(A[1]+ny*r1)}L${f2(B[0]+nx*r2)} ${f2(B[1]+ny*r2)}A${r2} ${r2} 0 0 0 ${f2(B[0]-nx*r2)} ${f2(B[1]-ny*r2)}L${f2(A[0]-nx*r1)} ${f2(A[1]-ny*r1)}A${r1} ${r1} 0 0 0 ${f2(A[0]+nx*r1)} ${f2(A[1]+ny*r1)}Z`}
+// торс: плечи, талия, таз — гладкий силуэт через три ширины
+function torso(s,m,p,rs,rm,rp){const nrm=(a,b)=>{const dx=b[0]-a[0],dy=b[1]-a[1],L=Math.hypot(dx,dy)||1e-3;return [-dy/L,dx/L]};
+  const ns=nrm(s,m),np=nrm(m,p),q=[ns[0]+np[0],ns[1]+np[1]],ql=Math.hypot(q[0],q[1])||1,nm=[q[0]/ql,q[1]/ql];
+  const S1=[s[0]+ns[0]*rs,s[1]+ns[1]*rs],S2=[s[0]-ns[0]*rs,s[1]-ns[1]*rs],P1=[p[0]+np[0]*rp,p[1]+np[1]*rp],P2=[p[0]-np[0]*rp,p[1]-np[1]*rp];
+  const c1=[2*(m[0]+nm[0]*rm)-(S1[0]+P1[0])/2,2*(m[1]+nm[1]*rm)-(S1[1]+P1[1])/2],c2=[2*(m[0]-nm[0]*rm)-(S2[0]+P2[0])/2,2*(m[1]-nm[1]*rm)-(S2[1]+P2[1])/2];
+  return `M${f2(S1[0])} ${f2(S1[1])}Q${f2(c1[0])} ${f2(c1[1])} ${f2(P1[0])} ${f2(P1[1])}A${rp} ${rp} 0 0 0 ${f2(P2[0])} ${f2(P2[1])}Q${f2(c2[0])} ${f2(c2[1])} ${f2(S2[0])} ${f2(S2[1])}A${rs} ${rs} 0 0 0 ${f2(S1[0])} ${f2(S1[1])}Z`}
+// голова-яйцо, вытянутая вдоль шеи
+function head(c,u,r){const a=Math.atan2(u[1],u[0])+Math.PI/2,rx=r*.86,ry=r*1.12,co=Math.cos(a),si=Math.sin(a);
+  const pt=(x,y)=>f2(c[0]+x*co-y*si)+' '+f2(c[1]+x*si+y*co);
+  return `M${pt(0,-ry)}A${rx} ${ry} ${f2(a*180/Math.PI)} 0 0 ${pt(0,ry)}A${rx} ${ry} ${f2(a*180/Math.PI)} 0 0 ${pt(0,-ry)}Z`}
+function figMount(name){const P2=POSE[name],box=$('exFig');if(!P2){box.innerHTML='';FIGS=null;return}
+  // дальняя рука/нога без своих координат повторяет ближнюю со сдвигом вглубь, как тень на референсе
+  const OFF=[1.7,-.7],sh=(q)=>[q[0]+OFF[0],q[1]+OFF[1]];
+  const fill=o=>{const r={...o};if(!r.m)r.m=[(r.s[0]+r.p[0])/2,(r.s[1]+r.p[1])/2];r.p2=r.p;r.s2=r.s;
+    if(!r.k2){r.k2=sh(r.k);r.a2=sh(r.a);r.p2=sh(r.p)}else if(!r.a2)r.a2=r.a;
+    if(!r.e2){r.e2=sh(r.e);r.w2=sh(r.w);r.s2=sh(r.s)}else if(!r.w2)r.w2=r.w;return r};
+  const m=P().sex==='m',far='<path class="fr"/>'.repeat(6);
+  box.innerHTML=`<svg class="fig" viewBox="0 0 100 100" role="img" aria-label="Как выполняется упражнение">`
+    +`<line class="fl" x1="4" y1="91" x2="96" y2="91"/><ellipse class="fsh" cy="91.3" ry="1.6"/><g class="prop">${PROPS[name]||''}</g>`
+    +`<g class="gf">${far}</g><g class="gbo">${'<path/>'.repeat(9)}</g><g class="gbf">${'<path/>'.repeat(9)}</g><g class="gao">${'<path/>'.repeat(3)}</g><g class="gaf">${'<path/>'.repeat(3)}</g></svg>`;
+  const g=c=>[...box.querySelectorAll('.'+c+' path')];
+  FIGS={A:fill(P2[0]),B:fill({...P2[0],...P2[1]}),gf:g('gf'),bo:g('gbo'),bf:g('gbf'),ao:g('gao'),af:g('gaf'),sh:box.querySelector('.fsh'),
+    front:FIGFRONT.has(name),male:m,tail:!m&&!FIGFRONT.has(name),
+    R:m?{th:[4.9,3.2],sh:[3.2,1.9],ua:[2.9,2.2],fa:[2.2,1.5],ts:5.9,tm:4.5,tp:4.7,hd:4.9}:{th:[5,3.0],sh:[3.1,1.7],ua:[2.4,1.8],fa:[1.8,1.3],ts:5,tm:3.6,tp:5.4,hd:4.7}};
+  if(calm()){figDraw(1);return}
+  if(!FIGR)FIGR=requestAnimationFrame(figFrame)}
+function figDraw(k){const {A,B,R}=FIGS,J={};
+  for(const j in A)J[j]=[A[j][0]+(B[j][0]-A[j][0])*k,A[j][1]+(B[j][1]-A[j][1])*k];
+  const dir=(a,b)=>{const dx=b[0]-a[0],dy=b[1]-a[1],L=Math.hypot(dx,dy)||1;return [dx/L,dy/L]};
+  const foot=(kk,a)=>{const d0=dir(kk,a),d=FIGS.front?[a[0]<J.p[0]?-1:1,0]:[d0[1],-d0[0]];return cap(a,[a[0]+d[0]*3.6,a[1]+d[1]*3.6],1.6,.9)};
+  const hand=(e,w)=>{const d=dir(e,w);return cap(w,[w[0]+d[0]*2.4,w[1]+d[1]*2.4],1.35,.95)};
+  const u=dir(J.s,J.h);
+  // дальние рука и нога
+  [cap(J.p2,J.k2,...R.th),cap(J.k2,J.a2,...R.sh),foot(J.k2,J.a2),cap(J.s2,J.e2,...R.ua),cap(J.e2,J.w2,...R.fa),hand(J.e2,J.w2)].forEach((d,i)=>FIGS.gf[i].setAttribute('d',d));
+  // корпус, ближняя нога, голова: контур общий, поэтому рисуются дважды (обводка, потом заливка)
+  const b=[u[1],-u[0]],t0=[J.h[0]+b[0]*3.4+u[0]*2.4,J.h[1]+b[1]*3.4+u[1]*2.4];
+  const body=[FIGS.tail?cap(t0,[t0[0]+b[0]*2.4,t0[1]+b[1]*2.4+4.4],2.1,1):'',cap(J.s,[J.s[0]+u[0]*6.5,J.s[1]+u[1]*6.5],1.9,1.7),torso(J.s,J.m,J.p,R.ts,R.tm,R.tp),
+    cap(J.p,J.k,...R.th),cap(J.k,J.a,...R.sh),foot(J.k,J.a),head(J.h,u,R.hd)];
+  // изгибы силуэта: ягодицы сзади, у женской фигуры грудь спереди (сбоку, не в виде спереди)
+  const v=dir(J.p,J.s),bt=[v[1],-v[0]],fem=!FIGS.male,circ=(c,r)=>cap(c,[c[0]+.01,c[1]],r,r);
+  body.push(FIGS.front?'':circ([J.p[0]+bt[0]*(fem?2.3:1.6)-v[0]*.4,J.p[1]+bt[1]*(fem?2.3:1.6)-v[1]*.4],fem?4.4:3.9),
+    FIGS.front||!fem?'':circ([J.s[0]+(J.p[0]-J.s[0])*.26-bt[0]*2.9,J.s[1]+(J.p[1]-J.s[1])*.26-bt[1]*2.9],2.5));
+  body.forEach((d,i)=>{FIGS.bo[i].setAttribute('d',d);FIGS.bf[i].setAttribute('d',d)});
+  const arm=[cap(J.s,J.e,...R.ua),cap(J.e,J.w,...R.fa),hand(J.e,J.w)];
+  arm.forEach((d,i)=>{FIGS.ao[i].setAttribute('d',d);FIGS.af[i].setAttribute('d',d)});
+  let x0=99,x1=1;for(const j in J)if(J[j][1]>80){x0=Math.min(x0,J[j][0]);x1=Math.max(x1,J[j][0])}
+  if(x0>x1){x0=Math.min(J.a[0],J.a2[0]);x1=Math.max(J.a[0],J.a2[0])}
+  FIGS.sh.setAttribute('cx',f2((x0+x1)/2));FIGS.sh.setAttribute('rx',f2(Math.max(9,(x1-x0)/2+7)))}
+function figFrame(t){if(!FIGS||!$('exm').classList.contains('show')){FIGR=0;return}
+  figDraw((1-Math.cos(((t/1000)%2.8)/2.8*2*Math.PI))/2);FIGR=requestAnimationFrame(figFrame)}
 
 // окно «Как делать»: схема, количество, подсказка, листание по упражнениям тренировки
 let EXL=[],EXI=0,EXN='';
 function exOpen(list,i,title){EXL=list;EXI=i;EXN=title;exShow();$('exm').classList.add('show');vib('select')}
 function exShow(){const it=EXL[EXI];$('exTag').textContent=EXN+' · '+(EXI+1)+' из '+EXL.length;$('exTitle').textContent=it.n;$('exAmt').textContent=it.amt;$('exTip').textContent=it.tip;
-  $('exFig').innerHTML=figure(it.a);$('exPrev').disabled=EXI===0;$('exNext').textContent=EXI===EXL.length-1?'Понятно':'Дальше'}
+  figMount(it.a);$('exPrev').disabled=EXI===0;$('exNext').textContent=EXI===EXL.length-1?'Понятно':'Дальше'}
 
 function quests(ds){
   const I=info(ds),r=RUN[I.rw-1],p=P(),st=strength(),wk=({15:15,30:20,45:30})[I.T],sun=({15:20,30:30,45:45})[I.T];
