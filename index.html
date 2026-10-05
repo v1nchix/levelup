@@ -847,7 +847,7 @@ input,select{font-size:16px}
 const KEY='levelup.v1';
 // Версия сборки: проставляется скриптом deploy-app.ps1. Телеграм любит показывать старую копию из кэша,
 // поэтому при открытии приложение сверяет версию с сайтом и, если вышла новая, перезагружается.
-const BUILD='20261005-043254';
+const BUILD='20261005-043620';
 async function checkUpdate(){
   if(BUILD==='dev'||location.protocol==='file:')return;
   try{const t=await (await fetch('./?b='+Date.now(),{cache:'no-store'})).text(),m=t.match(/BUILD\s*=\s*'(\d{8}-\d{6})'/);
@@ -1368,7 +1368,8 @@ function weights(){return Object.keys(S.days).sort().filter(d=>S.days[d].weight)
 function avg7(W,ds){const a=W.filter(x=>x.d<=ds&&diff(x.d,ds)<7);return a.length?a.reduce((t,x)=>t+x.w,0)/a.length:null}
 function level(xp){let i=0;LEVELS.forEach((l,k)=>{if(xp>=l[0])i=k});const nx=LEVELS[i+1];return {i,name:LEVELS[i][1],from:LEVELS[i][0],to:nx?nx[0]:null}}
 function stats(){
-  const s={xp:0,runs:0,steps:0,sets:0,stp:0,quests:0,perfect:0,waterDays:0,best:0,streak:0,plank:0,bonusAll:0};
+  const s={xp:0,runs:0,steps:0,sets:0,stp:0,quests:0,perfect:0,waterDays:0,best:0,streak:0,plank:0,bonusAll:0,
+    str:0,stretch:0,sleep:0,protein:0,dog:0,kids:0,gym:0,cycle:0,week:0,back:0};
   const B=bonuses();
   Object.keys(S.days).sort().forEach(ds=>{
     const r=S.days[ds];s.xp+=dayXP(ds);s.steps+=r.steps||0;s.sets+=r.sets||0;s.stp+=r.stp||0;
@@ -1377,12 +1378,24 @@ function stats(){
     if((r.water||0)>=6)s.waterDays++;
     if(B.every(b=>r.done[b.id]))s.bonusAll++;
   });
+  // тренировки, сон, белок и личные бонусы по отметкам дней
+  Object.keys(S.days).forEach(ds=>{const d=S.days[ds].done||{};
+    if(d.body){if(info(ds).str)s.str++;else s.stretch++}
+    if(d.sleep)s.sleep++;if(d.protein)s.protein++;
+    ['dog','kids','gym','cycle'].forEach(k=>{if(d[k])s[k]++})});
+  // по календарю: лучшая неделя (дней из 7) и возвращение после перерыва
+  if(S.start){const cal=[];for(let d=S.start;d<=TODAY;d=addD(d,1))cal.push([d,goodDay(d)]);
+    const wk={};cal.forEach(([d,g])=>{const w=(parse(d).getDay()+6)%7,mon=addD(d,-w);wk[mon]=(wk[mon]||0)+(g?1:0)});
+    s.week=Math.max(0,...Object.values(wk));
+    for(let i=6;i<cal.length;i++)if(cal[i][1]&&cal[i-1][1]&&cal[i-2][1]&&!cal[i-3][1]&&!cal[i-4][1]&&!cal[i-5][1]&&cal.slice(0,i-5).some(x=>x[1])){s.back=1;break}}
   const si=streakInfo();s.streak=si.streak;s.best=si.best;s.fz=si.fz;s.used=si.used;
   S.measures.forEach(m=>{if(m.p)s.plank=Math.max(s.plank,m.p)});
   const W=weights();s.cur=W.length?avg7(W,W[W.length-1].d):null;s.lost=s.cur!=null?Math.max(0,S.startWeight-s.cur):0;
+  s.meas=W.length>0||S.measures.length>0;
   return s;
 }
-const I_FIRE='M12 2c1 4 6 6 6 12a6 6 0 0 1-12 0c0-3 2-5 3-6 0 3 2 4 3 4 0-4-1-7 0-10z',I_STAR='M12 2l3 7h7l-5.5 4 2 7-6.5-4.5L5.5 20l2-7L2 9h7z',I_BARS='M4 20h16M7 16V9M12 16V5M17 16v-4',I_DOWN='M12 5v14M6 13l6 6 6-6',I_SQ='M7 4v6l5 4 5-4V4M12 14v7';
+const I_FIRE='M12 2c1 4 6 6 6 12a6 6 0 0 1-12 0c0-3 2-5 3-6 0 3 2 4 3 4 0-4-1-7 0-10z',I_STAR='M12 2l3 7h7l-5.5 4 2 7-6.5-4.5L5.5 20l2-7L2 9h7z',I_BARS='M4 20h16M7 16V9M12 16V5M17 16v-4',I_DOWN='M12 5v14M6 13l6 6 6-6',I_SQ='M7 4v6l5 4 5-4V4M12 14v7',
+  I_DB='M4 10v4M7 8v8M17 8v8M20 10v4M7 12h10',I_HEART='M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.5A4 4 0 0 1 19 10c0 5.5-7 10-7 10z';
 function ACH(){return [
   {id:'first',t:'Первый шаг',s:'Первая галочка',ok:s=>s.quests>=1,i:'M5 12l5 5L20 7'},
   {id:'run1',t:'Кроссовки в деле',s:P().run==='no'?'Первая быстрая ходьба':'Первая пробежка',ok:s=>s.runs>=1,i:'M4 18h6l2-6h6M10 18l2-6'},
@@ -1401,7 +1414,31 @@ function ACH(){return [
   {id:'w3',t:'Минус 3 кг',s:'По среднему за неделю',ok:s=>s.lost>=3,i:I_DOWN},
   {id:'w5',t:'Минус 5 кг',s:'По среднему за неделю',ok:s=>s.lost>=5,i:I_DOWN},
   {id:'goal',t:'Цель',s:'Ты '+G('сделала','сделал')+' это',ok:s=>s.cur!=null&&s.cur<=S.goal,i:I_STAR},
-  {id:'plank60',t:'Планка 60 секунд',s:'Стальной корпус',ok:s=>s.plank>=60,i:'M3 14h18M6 14l2-4h8l2 4'}
+  {id:'plank60',t:'Планка 60 секунд',s:'Стальной корпус',ok:s=>s.plank>=60,i:'M3 14h18M6 14l2-4h8l2 4'},
+  // первые дни
+  {id:'str1',t:'Первая силовая',s:'Мышцы проснулись',ok:s=>s.str>=1,i:I_DB},
+  {id:'stretch1',t:'Первая растяжка',s:'Тело скажет спасибо',ok:s=>s.stretch>=1,i:'M5 19c4-1 6-5 7-9s3-6 7-6'},
+  {id:'meas1',t:'Первый замер',s:'Есть точка отсчёта',ok:s=>s.meas,i:'M4 15L15 4l5 5L9 20zM8 11l2 2M11 8l2 2'},
+  {id:'plank30',t:'Планка 30 секунд',s:'Корпус держит',ok:s=>s.plank>=30,i:'M3 14h18M6 14l2-4h8l2 4'},
+  // 2-3 неделя
+  {id:'st14',t:'Две недели подряд',s:'Серия 14 дней',ok:s=>s.best>=14,i:I_FIRE},
+  {id:'week5',t:'Сильная неделя',s:'5 засчитанных дней из 7',ok:s=>s.week>=5,i:I_STAR},
+  {id:'str10',t:'10 силовых',s:'Форма меняется',ok:s=>s.str>=10,i:I_DB},
+  {id:'sleep7',t:G('Выспалась','Выспался')+' неделю',s:'Сон 7 ночей',ok:s=>s.sleep>=7,i:'M20 14A8 8 0 1 1 10 4a6 6 0 0 0 10 10z'},
+  {id:'prot14',t:'Белковый режим',s:'Белок 14 дней',ok:s=>s.protein>=14,i:I_STAR},
+  // поддержка
+  {id:'back',t:'С возвращением',s:'Снова 3 дня подряд после перерыва',ok:s=>s.back>=1,i:'M9 14L4 9l5-5M4 9h11a5 5 0 0 1 0 10h-3'},
+  {id:'saved',t:'Спасено',s:'Заморозка сохранила серию',ok:s=>(s.used||[]).length>0,i:'M12 3l7 3v6c0 5-3 8-7 9-4-1-7-4-7-9V6z'},
+  // надолго
+  {id:'st30',t:'Месяц подряд',s:'Серия 30 дней',ok:s=>s.best>=30,i:I_FIRE},
+  {id:'st100',t:'Сто дней',s:'Серия 100 дней',ok:s=>s.best>=100,i:I_FIRE},
+  {id:'wo50',t:'50 тренировок',s:'Силовые, растяжка и кардио',ok:s=>s.str+s.stretch+s.runs>=50,i:I_BARS},
+  {id:'maxlvl',t:'Легенда',s:'Максимальный уровень',ok:s=>s.xp>=LEVELS[LEVELS.length-1][0],i:'M3 8l4 4 5-7 5 7 4-4-2 11H5z'},
+  // личные, под анкету
+  ...(has('life','dog')?[{id:'dog10',t:'Лучший друг',s:'10 длинных прогулок с собакой',ok:s=>s.dog>=10,i:I_HEART}]:[]),
+  ...(has('life','kids')?[{id:'kids10',t:'Активные выходные',s:'10 прогулок с детьми',ok:s=>s.kids>=10,i:I_HEART}]:[]),
+  ...(has('life','gym')?[{id:'gym10',t:'Свой в зале',s:'10 раз в зале или бассейне',ok:s=>s.gym>=10,i:I_DB}]:[]),
+  ...(P().commute==='cycle'?[{id:'cyc10',t:'На колёсах',s:'10 поездок своими силами',ok:s=>s.cycle>=10,i:'M5 17m-3 0a3 3 0 1 0 6 0a3 3 0 1 0-6 0M19 17m-3 0a3 3 0 1 0 6 0a3 3 0 1 0-6 0M5 17l4-8h6l4 8M9 9l3 8'}]:[])
 ]}
 
 // ---------- отрисовка ----------
