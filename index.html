@@ -356,6 +356,26 @@ input,select{font-size:16px}
 .onb-nav .solid{flex:1}
 .profile{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
 [hidden]{display:none!important}
+#wsGrid .tot b{font-size:22px;white-space:nowrap}
+.stc{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.stc .opt{padding:9px 13px;font-size:13px}
+/* тренировка списком и схемы упражнений */
+.exl{display:grid;gap:6px;margin-top:12px}
+.exr{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:rgba(var(--ink),.03);color:var(--text);font-family:var(--body);font-size:14px;line-height:1.3;cursor:pointer;transition:transform .12s var(--ease)}
+.exr:active{transform:scale(.98)}
+.exr span{flex:1;min-width:0}
+.exr b{font-family:var(--wide);font-variation-settings:'wdth' 120,'opsz' 144;font-size:11px;white-space:nowrap}
+.exr i{font-style:normal;font-size:11px;color:var(--muted);white-space:nowrap;border-left:1px solid var(--line);padding-left:10px}
+.wo+.wo{margin-top:18px}
+.wo .th{font-family:var(--wide);font-variation-settings:'wdth' 151,'opsz' 144;font-size:9px;letter-spacing:.22em;color:var(--muted)}
+.figbox{margin-top:16px;border:1px solid var(--line);border-radius:16px;background:rgba(var(--ink),.03);aspect-ratio:1/1;max-width:100%}
+.fig{width:100%;height:100%;display:block}
+.fig line,.fig circle{stroke:var(--hi);stroke-width:4;stroke-linecap:round;fill:none}
+.fig circle{fill:var(--bg)}
+.fig .bk{opacity:.4}
+.fig .fl{stroke:rgba(var(--ink),.18);stroke-width:2}
+.fig .prop line{stroke:rgba(var(--ink),.35);stroke-width:3}
+@media(max-width:600px){.exr i{display:none}.exr{padding:11px 12px}}
 /* демо и оплата */
 .demo-bar{border-color:rgba(var(--ink),.3);background:rgba(var(--ink),.06)}
 .pl{position:relative}
@@ -483,7 +503,7 @@ input,select{font-size:16px}
     <h2 id="strH">Силовая на <span class="accent">форму</span></h2>
     <p class="lead" id="strLead"></p>
     <div class="grid2">
-      <div class="card"><h3>Круг</h3><ul class="list" id="strList"></ul></div>
+      <div class="card"><h3>Тренировки</h3><div id="strList"></div></div>
       <div class="card"><h3>Как расти</h3><ul class="list" id="growList"></ul></div>
     </div>
   </div>
@@ -540,7 +560,7 @@ input,select{font-size:16px}
     <div class="kg" style="margin-top:14px"><b id="kgLost">0,0</b><span class="lead" style="margin:0" id="kgOf"></span></div>
     <div class="bar"><i id="kgBar" style="width:0"></i></div>
     <div class="marks" id="kgMarks"></div>
-    <button class="btn solid" id="storyBtn" style="margin-top:24px">Карточка для сторис</button>
+    <div class="ctl" style="margin-top:24px;gap:10px"><button class="btn solid" id="storyBtn">Карточка для сторис</button><button class="btn" id="weekBtn">Итог недели</button></div>
   </div>
   <div class="totals" id="totals"></div>
 
@@ -674,6 +694,27 @@ input,select{font-size:16px}
   <button class="btn" id="payClose" style="width:100%;margin-top:10px">Позже</button>
 </div></div>
 
+<!-- ================= ИТОГ НЕДЕЛИ ================= -->
+<div class="over" id="wsum"><div class="card ob">
+  <span class="tag" id="wsTag">Итог недели</span>
+  <h2 id="wsTitle"></h2>
+  <div class="totals" id="wsGrid" style="grid-template-columns:1fr 1fr"></div>
+  <p class="lead" id="wsText" style="margin-top:18px;font-size:14px"></p>
+  <button class="btn solid" id="wsClose" style="width:100%;margin-top:22px">Погнали дальше</button>
+</div></div>
+
+<!-- ================= КАК ДЕЛАТЬ УПРАЖНЕНИЕ ================= -->
+<div class="over" id="exm"><div class="card ob exm">
+  <span class="tag" id="exTag">Упражнение</span>
+  <h2 id="exTitle" style="font-size:clamp(20px,6vw,30px)"></h2>
+  <div class="figbox" id="exFig"></div>
+  <div class="mini" id="exAmt" style="display:inline-flex;margin-top:14px"></div>
+  <p class="lead" id="exTip" style="margin-top:12px;font-size:14px"></p>
+  <p class="small">Схема показывает движение. Если что-то болит, пропусти упражнение.</p>
+  <div class="onb-nav"><button class="btn" id="exPrev">Назад</button><button class="btn solid" id="exNext">Дальше</button></div>
+  <button class="btn" id="exClose" style="width:100%;margin-top:10px">Закрыть</button>
+</div></div>
+
 <!-- ================= ТАЙМЕР ================= -->
 <div class="over" id="tmr"><div class="card tm">
   <span class="tag" id="tmTag">Таймер</span>
@@ -796,7 +837,7 @@ input,select{font-size:16px}
 const KEY='levelup.v1';
 // Версия сборки: проставляется скриптом deploy-app.ps1. Телеграм любит показывать старую копию из кэша,
 // поэтому при открытии приложение сверяет версию с сайтом и, если вышла новая, перезагружается.
-const BUILD='20261004-233903';
+const BUILD='20261005-030812';
 async function checkUpdate(){
   if(BUILD==='dev'||location.protocol==='file:')return;
   try{const t=await (await fetch('./?b='+Date.now(),{cache:'no-store'})).text(),m=t.match(/BUILD\s*=\s*'(\d{8}-\d{6})'/);
@@ -945,14 +986,14 @@ const API='https://functions.yandexcloud.net/d4ec38bbqerlda1v5ktp';
 async function api(a,payload){if(!TG)return null;
   try{const r=await fetch(API+'?a='+a,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({initData:TG.initData,...payload})});return await r.json()}catch(e){return null}}
 // доступ: до оплаты демо-режим (анкета, план, одно пробное задание). Статус оплаты знает сервер.
-let PAID=false,OFFER={seats:null,price:699,full:999};
+let PAID=false,CONSENT=false,OFFER={seats:null,price:699,full:999};
 try{PAID=localStorage.getItem(KEY+'.paid')==='1';OFFER=JSON.parse(localStorage.getItem(KEY+'.offer'))||OFFER}catch(e){}
 const demo=()=>!PAID;
 function gate(){if(PAID)return true;openPay();return false}
 async function checkStatus(){
   const r=await api('status',{});if(!r||!r.ok)return;
   OFFER={seats:r.seats,price:r.price,full:r.full};try{localStorage.setItem(KEY+'.offer',JSON.stringify(OFFER))}catch(e){}
-  const oc=document.getElementById('ownerCard');if(oc)oc.hidden=!r.owner&&!TESTMODE;
+  CONSENT=!!r.consent;const oc=document.getElementById('ownerCard');if(oc)oc.hidden=!r.owner&&!TESTMODE;
   try{localStorage.setItem(KEY+'.owner',r.owner?'1':'0')}catch(e){}
   if(!!r.paid===PAID)return;
   const was=PAID;PAID=!!r.paid;try{localStorage.setItem(KEY+'.paid',PAID?'1':'0')}catch(e){}
@@ -977,7 +1018,7 @@ function haptic(ok){try{if(TG&&TG.HapticFeedback){ok?TG.HapticFeedback.notificat
 // Данные человека живут только у него: в памяти телефона и в облаке Телеграма.
 const DEFP={sex:'f',inv:[],day:'home',commute:'none',life:[],run:'none',food:[],chrono:'var',time:30};
 function norm(d){d=d&&typeof d==='object'?d:{};
-  const s={start:d.start||TODAY,startWeight:d.startWeight||70,goal:d.goal||62,height:d.height||null,age:d.age||25,setup:!!d.setup,p:d.p||null,trial:d.trial||null,days:d.days||{},measures:d.measures||[],ach:d.ach||[]};
+  const s={start:d.start||TODAY,startWeight:d.startWeight||70,goal:d.goal||62,height:d.height||null,age:d.age||25,setup:!!d.setup,p:d.p||null,trial:d.trial||null,cb:d.cb||null,ws:d.ws||null,days:d.days||{},measures:d.measures||[],ach:d.ach||[]};
   Object.keys(s.days).forEach(k=>{const r=s.days[k]||{};s.days[k]={done:r.done||{},steps:r.steps||0,water:r.water||0,sets:r.sets||0,weight:r.weight||null,energy:r.energy||0,stp:r.stp||0}});
   return s}
 function load(){try{const v=localStorage.getItem(KEY);return v?JSON.parse(v):null}catch(e){return null}}
@@ -992,7 +1033,7 @@ const G=(f,m)=>P().sex==='m'?m:f;
 // облако Телеграма: 4096 символов на ключ, дни лежат по месяцам в сжатом виде
 const BITS=['move','body','protein','clean','sleep','bfast','home','walk','stairs','core','night','soda','dog','stop','series','cardio','hang','park'];
 function pack(){
-  const out={cfg:JSON.stringify({start:S.start,startWeight:S.startWeight,goal:S.goal,height:S.height,age:S.age,setup:S.setup,p:S.p,ach:S.ach,trial:S.trial}),ms:JSON.stringify(S.measures)};
+  const out={cfg:JSON.stringify({start:S.start,startWeight:S.startWeight,goal:S.goal,height:S.height,age:S.age,setup:S.setup,p:S.p,ach:S.ach,trial:S.trial,cb:S.cb,ws:S.ws}),ms:JSON.stringify(S.measures)};
   Object.keys(S.days).sort().forEach(ds=>{const r=S.days[ds],k='d_'+ds.slice(0,4)+'_'+ds.slice(5,7);
     let b=0;BITS.forEach((id,i)=>{if(r.done[id])b|=1<<i});
     const row=[b,r.steps||0,r.water||0,r.sets||0,r.weight||0,r.energy||0,r.stp||0];if(row.every(x=>!x))return;
@@ -1074,19 +1115,105 @@ function info(ds){
   return {n,week:w,rw:Math.min(9,w+off),wd,run:[1,3,5].includes(wd),str:[2,4,6].includes(wd),steps:p.day==='feet'?Math.min(10000,7000+500*(w-1)):Math.min(8000,5000+500*(w-1)),T:+p.time||30,norun:p.run==='no'};
 }
 const walkMin=I=>Math.min(50,({15:15,30:25,45:35})[I.T]+5*(I.week-1));
-function strength(){
-  const T=+P().time||30,m=P().sex==='m',db=has('inv','db'),bands=has('inv','bands'),bar=has('inv','bar');
-  const rounds=T===15?2:T===45?4:3,min=T===15?10:T===45?25:15;
-  const ex=[
-    [db?'Приседания с гантелями':'Приседания',db?12:15,'Пятки в пол, колени смотрят туда же, куда носки.'],
-    [bands?'Ягодичный мостик с резинкой':'Ягодичный мостик',15,'Наверху сожми ягодицы на 2 секунды.'],
-    [db?'Выпады назад с гантелями':'Выпады назад','10 на ногу','Шаг назад, колено почти касается пола.'],
-    [m?'Отжимания':'Отжимания с колен',m?10:8,'Корпус прямой, как доска.'],
-    bar?['Австралийские подтягивания или подтягивания',6,'Под низким турником, тянешь грудь к перекладине.']:bands?['Тяга резинки к поясу',15,'Лопатки сводишь вместе.']:db?['Тяга гантели в наклоне','12 на руку','Спина ровная, локоть ведёшь к поясу.']:['Супермен',12,'Лёжа на животе поднимаешь руки и ноги.'],
-    ['Планка','30 секунд',has('inv','mat')?'На коврике, на локтях.':'На локтях, тело в одну линию.']
-  ];
-  return {rounds,min,ex};
-}
+// ---------- тренировки: три силовые по очереди (Вт, Чт, Сб) и две растяжки, повторы растут по неделям ----------
+function exLib(wk){const p=P(),m=p.sex==='m',db=has('inv','db'),bands=has('inv','bands'),bar=has('inv','bar'),roller=has('inv','roller'),adv=wk>=5;
+  return {
+    squat:{n:db?'Гоблет-присед с гантелью':adv?'Присед с паузой внизу':'Приседания',b:15,a:'squat',tip:'Пятки в пол, колени смотрят туда же, куда носки, спина ровная.'+(adv&&!db?' Внизу задержись на 2 секунды.':'')},
+    bridge:{n:adv?'Мостик на одной ноге':bands?'Ягодичный мостик с резинкой':'Ягодичный мостик',b:adv?10:15,side:adv,a:'bridge',tip:'Наверху сожми ягодицы на 2 секунды, поясницу не прогибай.'},
+    lunge:{n:db?'Выпады назад с гантелями':'Выпады назад',b:10,side:1,a:'lunge',tip:'Шаг назад, колено почти касается пола, корпус прямо.'},
+    side:{n:'Боковые выпады',b:10,side:1,a:'sidelunge',tip:'Широкий шаг в сторону, садишься на одну ногу, вторая остаётся прямой.'},
+    calf:{n:'Подъёмы на носки',b:20,a:'calf',tip:'Медленно вверх и вниз. Можно держаться за стену.'},
+    push:{n:m?(adv?'Отжимания узкие':'Отжимания'):(adv?'Отжимания':'Отжимания с колен'),b:m?10:8,a:(m||adv)?'pushup':'kneepush',tip:'Корпус прямой, как доска, локти под углом 45 градусов к телу.'},
+    row:bar?{n:'Австралийские подтягивания',b:6,a:'auspull',tip:'Под низким турником или крепким столом: тянешь грудь к перекладине, тело прямое.'}
+       :bands?{n:'Тяга резинки к поясу',b:15,a:'bandrow',tip:'Лопатки сводишь вместе, локти ведёшь назад вдоль тела.'}
+       :db?{n:'Тяга гантели в наклоне',b:12,side:1,a:'dbrow',tip:'Спина ровная, локоть ведёшь к поясу.'}
+       :{n:'Супермен',b:12,a:'superman',tip:'Лёжа на животе поднимаешь руки и ноги и задерживаешься на секунду.'},
+    press:db?{n:'Жим гантелей вверх',b:10,a:'press',tip:'От плеч выжимаешь гантели вверх, поясницу не прогибаешь.'}
+         :m?{n:'Пайк-отжимания',b:8,a:'pike',tip:'Таз вверх, тело уголком. Сгибая локти, опускаешь голову к полу.'}
+         :{n:'Отжимания от стены',b:15,a:'wallpush',tip:'Ладони на стене на уровне плеч, тело прямое, сгибаешь локти.'},
+    dips:{n:'Обратные отжимания от стула',b:10,a:'dips',tip:'Руки на краю устойчивого стула за спиной, локти сгибаешь строго назад.'},
+    plank:{n:'Планка',b:30,u:'sec',a:'plank',tip:'На локтях, тело в одну линию, живот подтянут.'},
+    splank:{n:'Боковая планка',b:20,u:'sec',side:1,a:'sideplank',tip:'Опора на локоть и стопы, таз не проваливается.'},
+    deadbug:{n:'Мёртвый жук',b:10,side:1,a:'deadbug',tip:'Лёжа на спине, поясница прижата к полу. Тянешь противоположные руку и ногу.'},
+    birddog:{n:'Птица-собака',b:10,side:1,a:'birddog',tip:'На четвереньках вытягиваешь противоположные руку и ногу, спина ровная.'},
+    climber:{n:'Скалолаз',b:20,a:'climber',tip:'Из упора лёжа по очереди подтягиваешь колени к груди. Темп спокойный.'},
+    jacks:{n:p.run==='no'?'Шаги в стороны с руками вверх':'Прыжки «звёздочка»',b:30,a:'jacks',tip:p.run==='no'?'Без прыжков: шаг в сторону и руки вверх, по очереди в каждую сторону.':'Ноги в стороны, руки вверх, приземляешься мягко на носки.'},
+    crunch:roller?{n:'Ролик для пресса',b:8,a:'roller',tip:'С колен выкатываешь ролик вперёд, пока держишь спину ровной.'}:{n:'Скручивания',b:15,a:'crunch',tip:'Поясница прижата к полу, поднимаешь только лопатки.'}
+  }}
+const WORKOUTS=[{n:'Ноги и ягодицы',ex:['squat','bridge','lunge','side','calf','plank']},
+                {n:'Верх тела и кор',ex:['push','row','press','dips','deadbug','splank']},
+                {n:'Всё тело',ex:['jacks','squat','push','bridge','row','climber','birddog']}];
+const STRETCH=[
+  [['Наклон к ногам сидя',40,'hamstring','Ноги прямые, тянешься грудью к коленям. Без рывков.'],['Выпад с растяжкой бедра',30,'hipflexor','Колено сзади на полу, таз мягко подаёшь вперёд.',1],
+   ['Кошка-корова',10,'catcow','На четвереньках по очереди выгибаешь и округляешь спину.',0,1],['Поза ребёнка',40,'child','Садишься на пятки, руки вперёд, расслабляешь спину.'],['Растяжка бедра стоя',30,'quad','Берёшь стопу рукой и подтягиваешь к ягодице. Можно держаться за стену.',1]],
+  [['Бабочка',40,'butterfly','Стопы вместе, колени мягко опускаешь вниз.'],['Скручивание лёжа',30,'twist','Колено переводишь в сторону, плечи остаются на полу.',1],
+   ['Растяжка груди у стены',30,'chest','Ладонь на стене, плавно разворачиваешь корпус от неё.',1],['Кошка-корова',10,'catcow','На четвереньках по очереди выгибаешь и округляешь спину.',0,1],['Поза ребёнка',40,'child','Садишься на пятки, руки вперёд, расслабляешь спину.']]];
+const REG={};
+const progMult=wk=>Math.min(2,1+.15*Math.floor((wk-1)/2));  // каждые 2 недели примерно +15%
+function amt(e,mult){const v=e.u==='sec'?Math.round(e.b*mult/5)*5:Math.round(e.b*mult);return (e.u==='sec'?v+' сек':'× '+v)+(e.side?' на сторону':'')}
+function workoutByIndex(i,wk){const L=exLib(wk),w=WORKOUTS[i],mult=progMult(wk);return {kind:'str',n:w.n,items:w.ex.map(k=>{const e=L[k];return {n:e.n,amt:amt(e,mult),a:e.a,tip:e.tip}})}}
+function workoutFor(ds){const I=info(ds),T=I.T;
+  if(I.str)return Object.assign(workoutByIndex(Math.max(0,[2,4,6].indexOf(I.wd)),I.week),{rounds:T===15?2:T===45?4:3,min:T===15?10:T===45?25:15});
+  const st=STRETCH[((I.n%2)+2)%2];
+  return {kind:'stretch',n:'Растяжка',min:T===15?5:10,items:st.slice(0,T===15?3:5).map(s=>({n:s[0],amt:s[5]?'× '+s[1]:s[1]+' сек'+(s[4]?' на сторону':''),a:s[2],tip:s[3]}))}}
+// совместимость: краткая схема для мест, где нужен только круг и минуты
+function strength(){const w=workoutFor(TODAY),T=+P().time||30;return {rounds:T===15?2:T===45?4:3,min:T===15?10:T===45?25:15,ex:w.items.map(i=>[i.n,i.amt,i.tip])}}
+
+// ---------- анимированные схемы упражнений: человечек из линий, два положения, плавный переход ----------
+// суставы: h голова, s плечо, m середина спины, p таз, k колено, a стопа, e локоть, w кисть; k2/a2/e2/w2 вторые нога и рука
+const ST={h:[50,16],s:[50,27],p:[50,52],k:[50,70],a:[50,89],e:[50,40],w:[50,52]};
+const POSE={
+  squat:[{...ST,e:[58,34],w:[68,34]},{h:[58,34],s:[54,44],p:[36,64],k:[56,66],a:[52,89],e:[64,48],w:[74,48]}],
+  bridge:[{h:[14,84],s:[24,85],p:[50,85],k:[64,70],a:[72,89],e:[34,88],w:[44,88]},{p:[48,70],k:[64,66]}],
+  lunge:[ST,{h:[48,28],s:[48,38],p:[46,62],k:[60,72],a:[60,89],k2:[36,84],a2:[26,89],e:[48,50],w:[48,62]}],
+  sidelunge:[{h:[50,16],s:[50,27],p:[50,52],k:[42,70],a:[36,89],k2:[58,70],a2:[64,89],e:[50,38],w:[50,46]},{h:[42,30],s:[42,40],p:[42,64],k:[32,74],a:[30,89],k2:[58,76],a2:[68,89],e:[46,50],w:[48,58]}],
+  calf:[ST,{h:[50,12],s:[50,23],p:[50,48],k:[50,66],a:[50,85]}],
+  pushup:[{h:[82,52],s:[72,58],p:[44,70],k:[28,77],a:[12,86],e:[72,73],w:[72,89]},{h:[80,72],s:[70,77],p:[42,81],k:[27,84],a:[12,87],e:[60,82]}],
+  kneepush:[{h:[78,52],s:[68,58],p:[44,72],k:[28,88],a:[14,80],e:[68,73],w:[68,89]},{h:[76,70],s:[66,75],p:[43,81],e:[56,82]}],
+  auspull:[{h:[76,62],s:[66,64],p:[38,76],k:[22,82],a:[8,89],e:[63,52],w:[62,41]},{h:[72,46],s:[64,50],p:[36,68],k:[21,79],e:[50,48]}],
+  bandrow:[{...ST,e:[60,36],w:[72,38]},{e:[40,40],w:[52,40]}],
+  dbrow:[{h:[78,36],s:[70,40],p:[42,50],k:[46,70],a:[42,89],k2:[50,70],a2:[54,89],e:[70,56],w:[70,70]},{e:[58,44],w:[64,56]}],
+  superman:[{h:[82,84],s:[72,86],p:[46,86],k:[30,86],a:[14,86],e:[84,87],w:[94,87]},{h:[82,79],s:[72,82],k:[30,84],a:[14,80],e:[84,80],w:[94,76]}],
+  press:[{...ST,e:[58,34],w:[56,24]},{e:[54,14],w:[52,4]}],
+  pike:[{h:[66,76],s:[64,66],p:[44,40],k:[33,64],a:[22,89],e:[67,78],w:[70,89]},{h:[68,84],s:[62,74],e:[58,80]}],
+  wallpush:[{h:[70,24],s:[64,32],p:[54,54],k:[48,72],a:[42,89],e:[76,32],w:[88,30]},{h:[76,28],s:[70,36],p:[57,56],e:[74,42]}],
+  dips:[{h:[40,30],s:[38,40],p:[42,58],k:[64,62],a:[66,89],e:[32,50],w:[30,60]},{h:[40,44],s:[38,54],p:[42,74],k:[64,70],e:[26,54]}],
+  plank:[{h:[82,70],s:[72,74],p:[46,77],k:[30,81],a:[14,86],e:[72,89],w:[84,89]},{h:[82,68],s:[72,73],p:[46,75]}],
+  sideplank:[{h:[80,52],s:[70,60],p:[44,74],k:[30,80],a:[16,88],e:[70,89],w:[80,89],e2:[70,48],w2:[70,36]},{p:[44,67],k:[30,77]}],
+  deadbug:[{h:[14,82],s:[24,84],p:[48,84],k:[48,66],a:[62,66],k2:[50,66],a2:[64,66],e:[28,66],w:[30,52],e2:[26,66],w2:[28,52]},{e:[16,72],w:[8,74],k2:[62,76],a2:[80,80]}],
+  birddog:[{h:[78,60],s:[70,66],p:[42,66],k:[42,88],a:[26,88],e:[70,78],w:[70,89]},{e2:[82,62],w2:[94,60],k2:[28,64],a2:[12,64]}],
+  climber:[{h:[82,52],s:[72,58],p:[44,70],k:[28,77],a:[12,86],e:[72,73],w:[72,89]},{k:[58,76],a:[50,86]}],
+  jacks:[{h:[50,16],s:[50,27],p:[50,52],k:[47,70],a:[46,89],k2:[53,70],a2:[54,89],e:[44,38],w:[42,50],e2:[56,38],w2:[58,50]},{k:[40,70],a:[32,89],k2:[60,70],a2:[68,89],e:[40,18],w:[34,8],e2:[60,18],w2:[66,8]}],
+  crunch:[{h:[14,82],s:[24,85],p:[50,85],k:[64,70],a:[74,89],e:[18,76],w:[12,80]},{h:[26,72],s:[33,78],e:[28,68],w:[22,72]}],
+  roller:[{h:[64,56],s:[58,62],p:[40,66],k:[38,88],a:[22,88],e:[60,74],w:[60,86]},{h:[80,74],s:[72,78],p:[46,80],e:[80,84],w:[88,86]}],
+  hamstring:[{h:[40,52],s:[40,62],p:[38,86],k:[60,86],a:[82,86],e:[50,70],w:[58,76]},{h:[62,70],s:[54,72],e:[68,80],w:[80,84]}],
+  hipflexor:[{h:[46,34],s:[46,44],p:[46,68],k:[62,72],a:[62,89],k2:[34,88],a2:[20,88],e:[54,60],w:[62,70]},{h:[50,36],s:[50,46],p:[52,72],e:[58,62],w:[64,72]}],
+  catcow:[{h:[80,62],s:[70,66],m:[56,72],p:[42,66],k:[42,88],a:[26,88],e:[70,78],w:[70,89]},{h:[78,72],m:[56,56]}],
+  child:[{h:[64,84],s:[54,80],p:[30,78],k:[36,88],a:[20,88],e:[70,86],w:[82,88]},{h:[65,85],s:[55,81],p:[31,76]}],
+  quad:[ST,{k2:[50,72],a2:[40,58],e:[46,50],w:[42,58]}],
+  butterfly:[{h:[50,48],s:[50,58],p:[50,84],k:[36,74],a:[48,86],k2:[64,74],a2:[52,86],e:[44,70],w:[48,82],e2:[56,70],w2:[52,82]},{k:[32,82],k2:[68,82]}],
+  twist:[{h:[14,84],s:[24,85],p:[50,85],k:[64,70],a:[72,89],e:[30,76],w:[36,68]},{k:[60,84],a:[74,84]}],
+  chest:[{...ST,e:[40,30],w:[24,30]},{h:[53,16],s:[53,27],e:[42,32]}]
+};
+const PROPS={auspull:'<line x1="40" y1="41" x2="92" y2="41"/>',dips:'<line x1="12" y1="61" x2="38" y2="61"/><line x1="15" y1="61" x2="15" y2="91"/><line x1="35" y1="61" x2="35" y2="91"/>',
+  wallpush:'<line x1="91" y1="6" x2="91" y2="91"/>',chest:'<line x1="21" y1="6" x2="21" y2="91"/>',bandrow:'<line x1="92" y1="30" x2="92" y2="91"/>'};
+function figure(name){const P2=POSE[name];if(!P2)return '';
+  const fill=o=>{const r={...o};['k','a','e','w'].forEach(j=>{if(!r[j+'2'])r[j+'2']=r[j]});return r};
+  const A=fill(P2[0]),B=fill({...P2[0],...P2[1]});
+  const v=(j,i)=>A[j][i]+';'+B[j][i]+';'+A[j][i];
+  const anim=(attr,j,i)=>`<animate attributeName="${attr}" values="${v(j,i)}" dur="2.6s" keyTimes="0;.5;1" calcMode="spline" keySplines=".45 0 .55 1;.45 0 .55 1" repeatCount="indefinite"/>`;
+  const seg=(j1,j2,cls)=>`<line class="${cls||''}" x1="${A[j1][0]}" y1="${A[j1][1]}" x2="${A[j2][0]}" y2="${A[j2][1]}">${anim('x1',j1,0)}${anim('y1',j1,1)}${anim('x2',j2,0)}${anim('y2',j2,1)}</line>`;
+  let g=seg('p','k2','bk')+seg('k2','a2','bk')+seg('s','e2','bk')+seg('e2','w2','bk');
+  g+=(A.m?seg('s','m')+seg('m','p'):seg('s','p'))+seg('p','k')+seg('k','a')+seg('s','e')+seg('e','w')+seg('s','h');
+  g+=`<circle r="6" cx="${A.h[0]}" cy="${A.h[1]}">${anim('cx','h',0)}${anim('cy','h',1)}</circle>`;
+  return `<svg class="fig" viewBox="0 0 100 100" role="img" aria-label="Схема движения"><line class="fl" x1="4" y1="91" x2="96" y2="91"/><g class="prop">${PROPS[name]||''}</g><g class="bod">${g}</g></svg>`}
+
+// окно «Как делать»: схема, количество, подсказка, листание по упражнениям тренировки
+let EXL=[],EXI=0,EXN='';
+function exOpen(list,i,title){EXL=list;EXI=i;EXN=title;exShow();$('exm').classList.add('show');vib('select')}
+function exShow(){const it=EXL[EXI];$('exTag').textContent=EXN+' · '+(EXI+1)+' из '+EXL.length;$('exTitle').textContent=it.n;$('exAmt').textContent=it.amt;$('exTip').textContent=it.tip;
+  $('exFig').innerHTML=figure(it.a);$('exPrev').disabled=EXI===0;$('exNext').textContent=EXI===EXL.length-1?'Понятно':'Дальше'}
+
 function quests(ds){
   const I=info(ds),r=RUN[I.rw-1],p=P(),st=strength(),wk=({15:15,30:20,45:30})[I.T],sun=({15:20,30:30,45:45})[I.T];
   const move=I.run
@@ -1099,7 +1226,8 @@ function quests(ds){
     :{t:'Без перекусов из пачки',s:'Захотелось перекусить: фрукт, йогурт, горсть орехов.'};
   return [
     {id:'move',xp:30,...move},
-    {id:'body',xp:25,t:I.str?'Силовая '+st.min+' минут':'Растяжка '+(I.T===15?5:10)+' минут',s:I.str?st.rounds+' круга: присед, мостик, выпады, отжимания, тяга, планка. Схема в «Плане».':'Ноги, спина, бёдра. Можно под сериал.'},
+    (()=>{const wo=workoutFor(ds);return {id:'body',xp:25,wo,t:wo.kind==='str'?'Силовая · '+wo.n:'Растяжка '+wo.min+' минут',
+      s:wo.kind==='str'?wo.rounds+' круга, около '+wo.min+' минут. Между кругами минута отдыха.':'Спокойно, без рывков. Можно под сериал.'}})(),
     {id:'steps',xp:20,type:'steps',t:'Шаги: '+fmt(I.steps),s:'Вечером посмотри в телефоне и впиши. Цель растёт на 500 каждую неделю.'},
     {id:'protein',xp:15,t:'Белок в каждом приёме еды',s:'Ладонь белка на тарелке: яйца, творог, курица, рыба, йогурт.'},
     {id:'water',xp:10,type:'water',t:'Вода: 6 стаканов',s:'Первый сразу после пробуждения, дальше по стакану перед едой.'},
@@ -1232,7 +1360,9 @@ function renderToday(){
   $('quests').innerHTML=qs.map(q=>{let ctl='';
     if(!qOpen(q.id)){const lv=Q_UNLOCK[q.id]+1;return `<div class="card q locked" data-lock="${lv}"><div class="chk">${lockSvg}</div><div class="qb"><div class="qh"><h3>${q.t}</h3><span class="xp">УР. ${lv}</span></div><p>Откроется на уровне ${lv}. Собирай XP, и дело добавится в список.</p></div></div>`}
     if(q.id==='move'&&isToday)ctl=`<div class="ctl"><button class="btn solid" data-timer="move">Запустить таймер</button></div>`;
-    if(q.type==='steps')ctl=`<div class="ctl"><input data-steps type="text" inputmode="numeric" enterkeyhint="done" placeholder="0" value="${r.steps||''}" aria-label="Шаги за день" ${demo()?'readonly':''}><span class="small" style="margin:0">${r.steps?Math.min(100,Math.round(r.steps/I.steps*100))+'% от цели':''}</span></div>`;
+    if(q.wo)ctl=`<div class="exl">${q.wo.items.map((it,i)=>`<button class="exr" data-ex="today:${i}"><span>${it.n}</span><b>${it.amt}</b><i>Как делать</i></button>`).join('')}</div>`;
+    if(q.type==='steps'){const rt=r.steps/I.steps,cur=!r.steps?0:rt<.5?.4:rt<1?.75:rt<1.2?1:1.3;
+      ctl=`<div class="stc">${[[.4,'Меньше половины'],[.75,'Больше половины'],[1,'Цель есть'],[1.3,G('Перевыполнила','Перевыполнил')]].map(([k,l])=>`<button class="opt ${cur===k?'on':''}" data-stk="${k}">${l}</button>`).join('')}</div><div class="ctl"><input data-steps type="text" inputmode="numeric" enterkeyhint="done" placeholder="0" value="${r.steps||''}" aria-label="Шаги за день" ${demo()?'readonly':''}><span class="small" style="margin:0">${r.steps?Math.min(100,Math.round(r.steps/I.steps*100))+'% от цели':'или впиши точно'}</span></div>`}
     if(q.type==='water')ctl=`<div class="ctl"><div class="cnt"><button class="ib" data-w="-1" aria-label="Минус стакан">−</button><b>${r.water||0}</b><button class="ib" data-w="1" aria-label="Плюс стакан">+</button></div><div class="drops">${Array.from({length:8},(_,i)=>`<i class="${i<(r.water||0)?'on':''}"></i>`).join('')}</div></div>`;
     return qCard({...q,typed:!!q.type},isDone(view,q),ctl);
   }).join('');
@@ -1288,12 +1418,13 @@ function renderPlan(){
   }
 
   const sg=strength();
-  $('strH').innerHTML=sg.min+' минут на <span class="accent">форму</span>';
-  $('strLead').textContent='Вт, Чт, Сб. '+sg.rounds+' круга, между кругами минута отдыха.'+(has('inv','db')||has('inv','bands')||has('inv','bar')?' Упражнения подобраны под твой инвентарь.':' Без инвентаря, хватит пола.');
-  $('strList').innerHTML=sg.ex.map(e=>`<li><b>${e[0]}</b> × ${e[1]}. ${e[2]}</li>`).join('');
-  $('growList').innerHTML=['Каждые 2 недели <b>+3 повтора</b> и <b>+10 секунд</b> планки.',
-    has('inv','db')||has('inv','bands')?'С 3 недели бери гантели тяжелее или резинку туже.':'С 3 недели присед и мостик с паузой 2 секунды внизу.',
-    'С 5 недели мостик на одной ноге'+(m?', отжимания с узкой постановкой рук.':', отжимания с колен меняешь на обычные, сколько получится.'),
+  $('strH').innerHTML='Три тренировки на <span class="accent">форму</span>';
+  $('strLead').textContent='Чередуются: Вт ноги и ягодицы, Чт верх тела и кор, Сб всё тело. '+sg.rounds+' круга, около '+sg.min+' минут, между кругами минута отдыха.'+(has('inv','db')||has('inv','bands')||has('inv','bar')?' Упражнения подобраны под твой инвентарь.':' Без инвентаря, хватит пола.');
+  REG.plan=[0,1,2].map(i=>workoutByIndex(i,I.week));
+  $('strList').innerHTML=REG.plan.map((w,wi)=>`<div class="wo"><div class="th">${['ВТ','ЧТ','СБ'][wi]} · ${w.n.toUpperCase()}</div><div class="exl">${w.items.map((it,i)=>`<button class="exr" data-ex="plan:${wi}:${i}"><span>${it.n}</span><b>${it.amt}</b><i>Как делать</i></button>`).join('')}</div></div>`).join('');
+  $('growList').innerHTML=['Повторы и секунды <b>растут сами</b>: каждые 2 недели примерно на 15%. Цифры на сегодня всегда на главном экране.',
+    'С 5 недели появляются <b>усложнённые варианты</b>: присед с паузой, мостик на одной ноге'+(m?', узкие отжимания.':', обычные отжимания вместо отжиманий с колен.'),
+    has('inv','db')||has('inv','bands')?'Стало легко на последних повторах? Бери гантели тяжелее или резинку туже.':'Стало легко? Делай движения медленнее: 3 секунды вниз, 1 вверх.',
     'Раз в неделю замеряй планку на максимум во вкладке «Прогресс». Эта цифра растёт быстрее всех.'].map(x=>'<li>'+x+'</li>').join('');
   $('foodRules').innerHTML=['<b>Тарелка:</b> половина овощи, четверть белок, четверть гарнир.',
     `<b>Белок ${prot} г в день.</b> Сытость дольше, мышцы остаются, а уходит жир.`,
@@ -1380,6 +1511,46 @@ function openPay(afterTrial){
   $('pay').classList.add('show');haptic(false);
 }
 $('payClose').onclick=()=>$('pay').classList.remove('show');
+// шаги кнопками: доля от цели дня, точное число можно вписать ниже
+document.addEventListener('click',e=>{const b=e.target.closest('[data-stk]');if(!b)return;if(!gate())return;
+  const bs=snap(),r=rec(view),goal=info(view).steps,was=isDone(view,{type:'steps'});r.steps=Math.round(goal*+b.dataset.stk/100)*100;
+  sfx('pop');vib('light');if(!was&&isDone(view,{type:'steps'}))toast('Шаги выполнены',20);commit(bs)});
+
+// режим возвращения: после перерыва в 3 дня и больше мягкий экран вместо давящего пустого календаря
+function checkComeback(){if(!PAID||!S.setup||S.cb===TODAY||doneCount(TODAY)>0)return;
+  const act=Object.keys(S.days).filter(d=>d<TODAY&&doneCount(d)>0).sort();if(!act.length)return;
+  const gap=diff(act[act.length-1],TODAY);if(gap<3)return;
+  S.cb=TODAY;save();
+  overlay('С возвращением','Ничего <span class="accent">страшного</span>','Перерывы бывают у всех. Начнём с малого: сегодня хватит трёх простых дел, например вода, белок и короткая прогулка. Уровень и награды остались с тобой.',null,true)}
+
+// итог недели: по воскресеньям вечером за текущую, в начале новой недели за прошлую
+const monOf=ds=>addD(ds,-((parse(ds).getDay()+6)%7));
+function weekData(mon){const days=Array.from({length:7},(_,i)=>addD(mon,i)).filter(d=>d<=TODAY&&d>=S.start);
+  const good=days.filter(goodDay).length,xp=days.reduce((a,d)=>a+dayXP(d),0),cardio=days.filter(d=>peek(d).done.move&&info(d).run).length;
+  const W=weights(),end=addD(mon,6)<TODAY?addD(mon,6):TODAY,a1=avg7(W,end),a0=avg7(W,addD(mon,-1));
+  const ms=S.measures.filter(m=>m.p),pin=ms.filter(m=>m.d>=mon&&m.d<=end),pb=ms.filter(m=>m.d<mon);
+  const plank=pin.length&&pb.length?Math.max(...pin.map(m=>m.p))-Math.max(...pb.map(m=>m.p)):null;
+  return {mon,end,good,xp,cardio,dw:a1!=null&&a0!=null?a1-a0:null,plank,has:days.some(d=>doneCount(d)>0)}}
+function weekShow(w){const s=parse(w.mon),e=parse(w.end);
+  $('wsTag').textContent='Итог недели · '+s.getDate()+' '+MON[s.getMonth()].slice(0,3)+' - '+e.getDate()+' '+MON[e.getMonth()].slice(0,3);
+  $('wsTitle').innerHTML=w.good+' из 7 <span class="accent">дней</span>';
+  const tl=[[fmt(w.xp),'XP за неделю'],[w.cardio,'кардио-тренировок'],[w.dw==null?'нет данных':(w.dw>0?'+':w.dw<0?'−':'')+f1(Math.abs(w.dw))+' кг','вес по среднему'],[w.plank==null?'нет замера':(w.plank>=0?'+':'−')+Math.abs(w.plank)+' сек','планка']];
+  $('wsGrid').innerHTML=tl.map(t=>`<div class="card tot"><b>${t[0]}</b><span>${t[1]}</span></div>`).join('');
+  $('wsText').textContent=w.good>=5?'Сильная неделя. Так и строится привычка: не идеально, а регулярно.':w.good>=3?'Хорошая неделя. Ещё пара засчитанных дней, и будет отличная.':'Неделя была непростой, так бывает. Новая неделя, новый счёт: начни с трёх простых дел.';
+  $('wsum').classList.add('show');vib('win');sfx('day')}
+function checkWeek(){if(!PAID||!S.setup)return;const now=new Date(),sun=now.getDay()===0&&now.getHours()>=18;
+  const key=sun?monOf(TODAY):addD(monOf(TODAY),-7);if(S.ws===key||addD(key,6)<S.start)return;
+  const w=weekData(key);if(!w.has)return;S.ws=key;save();setTimeout(()=>weekShow(w),600)}
+$('weekBtn').onclick=()=>{if(!gate())return;weekShow(weekData(monOf(TODAY)))};
+$('wsClose').onclick=()=>$('wsum').classList.remove('show');
+
+// «Как делать»: из списка на главном экране или из «Плана»
+document.addEventListener('click',e=>{const b=e.target.closest('[data-ex]');if(!b)return;const pr=b.dataset.ex.split(':');
+  if(pr[0]==='today'){const w=workoutFor(view);exOpen(w.items,+pr[1],w.kind==='str'?'Силовая · '+w.n:'Растяжка')}
+  else{const w=REG.plan[+pr[1]];exOpen(w.items,+pr[2],w.n)}});
+$('exPrev').onclick=()=>{if(EXI>0){EXI--;exShow()}};
+$('exNext').onclick=()=>{if(EXI<EXL.length-1){EXI++;exShow()}else $('exm').classList.remove('show')};
+$('exClose').onclick=()=>$('exm').classList.remove('show');
 // режим проверки для владелицы: проигрывает награды без изменения данных.
 // Показывается, если сервер узнал владелицу, или если приложение открыто ссылкой с ?test=1 (команда /test в боте).
 const TESTMODE=new URLSearchParams(location.search).get('test')==='1';
@@ -1409,7 +1580,7 @@ $('payBtn').onclick=async()=>{
 // ---------- обратная связь ----------
 let tt;
 function toast(text,xp){const t=$('toast');t.innerHTML=(xp?`<span class="xp">+${xp} XP</span>`:'')+'<span>'+text+'</span>';t.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),2400)}
-function overlay(tag,title,text,big){vib('win');sfx('win');confetti();
+function overlay(tag,title,text,big,quiet){if(!quiet){vib('win');sfx('win');confetti()}else vib('light');
   const ob=$('oBig');ob.hidden=!big;if(big){ob.textContent=big;ob.style.animation='none';void ob.offsetWidth;ob.style.animation='';setTimeout(()=>{confetti(90);vib('win')},500)}$('oTag').textContent=tag;$('oTitle').innerHTML=title;$('oText').textContent=text;$('over').classList.add('show')}
 $('oBtn').onclick=()=>$('over').classList.remove('show');
 function snap(){const st=stats();return {xp:st.xp,fz:st.fz,dc:doneCount(view),odc:openQuests(view).filter(q=>isDone(view,q)).length}}
@@ -1682,7 +1853,7 @@ function checkSetup(){if(!S.setup)obOpen()}
       keys.forEach(k=>{if(items[k])sent[k]=items[k]});
       const wasOpen=$('onb').classList.contains('show');
       S=unpack(items);saveLocal();if(view<S.start)view=S.start;
-      if(!typing())renderAll();syncSoon();
+      if(!typing())renderAll();syncSoon();setTimeout(()=>{checkComeback();checkWeek()},800);
       if(S.setup&&wasOpen)$('onb').classList.remove('show');else checkSetup();
     }
     cloudReady=true;
@@ -1691,7 +1862,7 @@ function checkSetup(){if(!S.setup)obOpen()}
   }catch(e){cloudReady=true;setSync('Облако Телеграма не ответило. Прогресс пока в памяти телефона.')}
 })();
 if(S.start>TODAY)S.start=TODAY;
-saveLocal();renderAll();checkSetup();syncSoon();checkStatus();
+saveLocal();renderAll();checkSetup();syncSoon();checkStatus();setTimeout(()=>{checkComeback();checkWeek()},1500);
 $('remGo').onclick=()=>{try{TG.openTelegramLink('https://t.me/levelup_fit_bot?start=reminders');TG.close()}catch(e){}};
 let delArm=0;
 $('delSrv').onclick=async()=>{const b=$('delSrv');
