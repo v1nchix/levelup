@@ -370,6 +370,10 @@ input,select{font-size:16px}
 .wo .th{font-family:var(--wide);font-variation-settings:'wdth' 151,'opsz' 144;font-size:9px;letter-spacing:.22em;color:var(--muted)}
 .figbox{margin-top:16px;border:1px solid var(--line);border-radius:16px;background:rgba(var(--ink),.03);aspect-ratio:1/1;max-width:100%}
 .fig{width:100%;height:100%;display:block}
+.fig3{width:100%;height:100%;display:block;border-radius:16px}
+.figload{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;font-size:12px;color:var(--muted)}
+.figload i{width:22px;height:22px;border-radius:50%;border:2px solid rgba(var(--ink),.15);border-top-color:var(--hi);animation:spin .9s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
 .fig line{stroke-linecap:round;fill:none}
 .fig .fl{stroke:rgba(var(--ink),.16);stroke-width:1.2}
 .fig .prop line{stroke:rgba(var(--ink),.3);stroke-width:2.4}
@@ -841,7 +845,7 @@ input,select{font-size:16px}
 const KEY='levelup.v1';
 // Версия сборки: проставляется скриптом deploy-app.ps1. Телеграм любит показывать старую копию из кэша,
 // поэтому при открытии приложение сверяет версию с сайтом и, если вышла новая, перезагружается.
-const BUILD='20261005-032156';
+const BUILD='20261005-033228';
 async function checkUpdate(){
   if(BUILD==='dev'||location.protocol==='file:')return;
   try{const t=await (await fetch('./?b='+Date.now(),{cache:'no-store'})).text(),m=t.match(/BUILD\s*=\s*'(\d{8}-\d{6})'/);
@@ -1255,6 +1259,18 @@ function figDraw(k){const {A,B,R}=FIGS,J={};
   let x0=99,x1=1;for(const j in J)if(J[j][1]>80){x0=Math.min(x0,J[j][0]);x1=Math.max(x1,J[j][0])}
   if(x0>x1){x0=Math.min(J.a[0],J.a2[0]);x1=Math.max(J.a[0],J.a2[0])}
   FIGS.sh.setAttribute('cx',f2((x0+x1)/2));FIGS.sh.setAttribute('rx',f2(Math.max(9,(x1-x0)/2+7)))}
+// 3D-манекен (fig3.js + fig.glb грузятся только при первом открытии «Как делать»); если 3D недоступно — плоская фигура
+let F3=null,F3P=null;
+function figShow(name){const box=$('exFig');
+  if(F3===false){figMount(name);return}
+  const go=()=>{if(EXL[EXI]&&EXL[EXI].a!==name)return;
+    if(F3&&POSE[name]){if(F3.canvas.parentNode!==box){box.innerHTML='';box.appendChild(F3.canvas)}
+      F3.show(name,{light:document.documentElement.classList.contains('light'),calm:calm()})}else figMount(name)};
+  if(F3){go();return}
+  box.innerHTML='<div class="figload"><i></i>Загружаю 3D-фигуру</div>';
+  if(!F3P)F3P=import('./fig3.js?v='+BUILD).then(m=>m.init({url:'fig.glb?v=1',POSE,active:()=>$('exm').classList.contains('show')}))
+    .then(f=>{F3=f},e=>{console.warn('3D',e);F3=false});
+  F3P.then(go)}
 function figFrame(t){if(!FIGS||!$('exm').classList.contains('show')){FIGR=0;return}
   figDraw((1-Math.cos(((t/1000)%2.8)/2.8*2*Math.PI))/2);FIGR=requestAnimationFrame(figFrame)}
 
@@ -1262,7 +1278,7 @@ function figFrame(t){if(!FIGS||!$('exm').classList.contains('show')){FIGR=0;retu
 let EXL=[],EXI=0,EXN='';
 function exOpen(list,i,title){EXL=list;EXI=i;EXN=title;exShow();$('exm').classList.add('show');vib('select')}
 function exShow(){const it=EXL[EXI];$('exTag').textContent=EXN+' · '+(EXI+1)+' из '+EXL.length;$('exTitle').textContent=it.n;$('exAmt').textContent=it.amt;$('exTip').textContent=it.tip;
-  figMount(it.a);$('exPrev').disabled=EXI===0;$('exNext').textContent=EXI===EXL.length-1?'Понятно':'Дальше'}
+  figShow(it.a);$('exPrev').disabled=EXI===0;$('exNext').textContent=EXI===EXL.length-1?'Понятно':'Дальше'}
 
 function quests(ds){
   const I=info(ds),r=RUN[I.rw-1],p=P(),st=strength(),wk=({15:15,30:20,45:30})[I.T],sun=({15:20,30:30,45:45})[I.T];
