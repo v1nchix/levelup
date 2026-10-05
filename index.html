@@ -851,7 +851,7 @@ input,select{font-size:16px}
 const KEY='levelup.v1';
 // Версия сборки: проставляется скриптом deploy-app.ps1. Телеграм любит показывать старую копию из кэша,
 // поэтому при открытии приложение сверяет версию с сайтом и, если вышла новая, перезагружается.
-const BUILD='20261005-085307';
+const BUILD='20261005-120025';
 async function checkUpdate(){
   if(BUILD==='dev'||location.protocol==='file:')return;
   try{const t=await (await fetch('./?b='+Date.now(),{cache:'no-store'})).text(),m=t.match(/BUILD\s*=\s*'(\d{8}-\d{6})'/);
@@ -1274,7 +1274,7 @@ let F3=null,F3P=null;
 const FRAMES={squat:3,squatdb:3,bridge:3,bridgeband:3,bridge1:3,lunge:3,lungedb:3,sidelunge:3,calf:3,plank:1,
   kneepush:3,pushup:3,superman:3,dbrow:3,bandrow:3,auspull:3,wallpush:3,pike:3,press:3,dips:3,deadbug:3,sideplank:3,
   jacks:3,stepjacks:3,stepup:3,climber:3,birddog:3,crunch:3,roller:3,
-  hamstring:3,hipflexor:3,catcow:3,child:3,quad:3,butterfly:3,twist:3,chest:3},FRAMES_V=2;
+  hamstring:3,hipflexor:3,catcow:3,child:3,quad:3,butterfly:3,twist:3,chest:3},FRAMES_V=3;
 let FRT=0;
 function framesShow(name){const box=$('exFig'),n=FRAMES[name];clearInterval(FRT);
   // тёмная тема: белый манекен на чёрном (-d); светлая: тёмный манекен на белом (-l)
