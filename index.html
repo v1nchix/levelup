@@ -704,7 +704,7 @@ input,select{font-size:16px}
     <li><b>Прогресс:</b> вес по среднему, календарь, замеры, карточки для сторис</li>
     <li><b>Напоминания от бота</b> утром и вечером</li>
   </ul>
-  <div class="pricebox"><div class="pr"><b id="payPrice">699 ₽</b><s id="payOld">999 ₽</s></div><span class="mini" id="paySeats">Цена для первых 50 покупателей</span></div>
+  <div class="pricebox"><div class="pr"><b id="payPrice">699 ₽</b><s id="payOld">999 ₽</s></div><span class="mini" id="paySeats">Цена для первых 20 покупателей</span></div>
   <button class="btn solid" id="payBtn" style="width:100%;margin-top:18px">Открыть доступ навсегда</button>
   <p class="small" style="text-align:center">Один платёж, без подписки. Оплата через ЮKassa. <a href="offer.html" target="_blank" style="color:var(--hi)">Оферта</a> · <a href="#" data-support style="color:var(--hi)">Вопрос? Поддержка</a></p>
   <button class="btn" id="payClose" style="width:100%;margin-top:10px">Позже</button>
@@ -857,7 +857,7 @@ input,select{font-size:16px}
 const KEY='levelup.v1';
 // Версия сборки: проставляется скриптом deploy-app.ps1. Телеграм любит показывать старую копию из кэша,
 // поэтому при открытии приложение сверяет версию с сайтом и, если вышла новая, перезагружается.
-const BUILD='20261005-144722';
+const BUILD='20261005-155457';
 async function checkUpdate(){
   if(BUILD==='dev'||location.protocol==='file:'||TM)return;   // во время таймера не перезагружаемся
   try{const t=await (await fetch('./?b='+Date.now(),{cache:'no-store'})).text(),m=t.match(/BUILD\s*=\s*'(\d{8}-\d{6})'/);
@@ -1647,7 +1647,7 @@ function renderAll(){LI=level(stats().xp).i;renderToday();renderPlan();renderPro
 function openPay(afterTrial){
   const promo=OFFER.seats==null||OFFER.seats>0;
   $('payPrice').textContent=(promo?699:(OFFER.full||999))+' ₽';$('payOld').hidden=!promo;
-  $('paySeats').textContent=promo?(OFFER.seats!=null?'Осталось '+OFFER.seats+' из 50 мест по этой цене':'Цена для первых 50 покупателей'):'Доступ навсегда';
+  $('paySeats').textContent=promo?(OFFER.seats!=null?'Осталось '+OFFER.seats+' из 20 мест по этой цене':'Цена для первых 20 покупателей'):'Доступ навсегда';
   $('payLead').textContent=afterTrial?'Есть первая галочка! Так выглядит каждый день в Level Up: дела, XP, серия и уровни. Открой полный доступ и продолжай.':'Твой план готов. Чтобы отмечать задания, копить XP, держать серию и видеть свой прогресс, открой полный доступ.';
   $('pay').classList.add('show');haptic(false);
 }
