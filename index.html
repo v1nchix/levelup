@@ -395,6 +395,10 @@ input,select{font-size:16px}
 .pl>*:not(.plbtn){filter:blur(7px);opacity:.45;pointer-events:none;-webkit-user-select:none;user-select:none}
 .plbtn{display:none}
 .pl .plbtn{display:block;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:2;white-space:nowrap}
+.linkbtn{display:block;margin:14px auto 0;background:none;border:0;color:var(--muted);font:inherit;font-size:13px;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.coderow{display:flex;gap:8px;margin-top:14px}
+.coderow input{flex:1;min-width:0;padding:14px 16px;border-radius:100px;border:1px solid var(--line);background:rgba(var(--ink),.04);color:var(--text);font:inherit;font-size:16px;letter-spacing:.08em;text-transform:uppercase}
+.coderow .btn{flex:none;padding-left:18px;padding-right:18px}
 .pricebox{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:22px;padding:16px 18px;border:1px solid rgba(var(--ink),.25);border-radius:16px;background:rgba(var(--ink),.05)}
 .pr b{font-family:var(--wide);font-variation-settings:'wdth' 151,'opsz' 144;font-weight:900;font-size:32px}
 .pr s{color:var(--muted);margin-left:10px;font-size:16px}
@@ -704,6 +708,8 @@ input,select{font-size:16px}
   <button class="btn solid" id="payBtn" style="width:100%;margin-top:18px">Открыть доступ навсегда</button>
   <p class="small" style="text-align:center">Один платёж, без подписки. Оплата через ЮKassa. <a href="offer.html" target="_blank" style="color:var(--hi)">Оферта</a> · <a href="#" data-support style="color:var(--hi)">Вопрос? Поддержка</a></p>
   <button class="btn" id="payClose" style="width:100%;margin-top:10px">Позже</button>
+  <button class="linkbtn" id="codeShow" type="button">Есть код доступа?</button>
+  <div class="coderow" id="codeRow" hidden><input id="codeIn" type="text" placeholder="LVL-XXXXXX" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="14"><button class="btn solid" id="codeBtn" type="button">Активировать</button></div>
 </div></div>
 
 <!-- ================= ИТОГ НЕДЕЛИ ================= -->
@@ -851,7 +857,7 @@ input,select{font-size:16px}
 const KEY='levelup.v1';
 // Версия сборки: проставляется скриптом deploy-app.ps1. Телеграм любит показывать старую копию из кэша,
 // поэтому при открытии приложение сверяет версию с сайтом и, если вышла новая, перезагружается.
-const BUILD='20261005-120025';
+const BUILD='20261005-120618';
 async function checkUpdate(){
   if(BUILD==='dev'||location.protocol==='file:')return;
   try{const t=await (await fetch('./?b='+Date.now(),{cache:'no-store'})).text(),m=t.match(/BUILD\s*=\s*'(\d{8}-\d{6})'/);
@@ -1708,6 +1714,16 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-demo]');if
   else if(k==='pay')openPay(true);
   else if(k==='timer')timerOpen('test');
 });
+// код доступа (бартер, подарок): сервер проверяет код и открывает доступ, дальше как после оплаты
+$('codeShow').onclick=()=>{$('codeRow').hidden=false;$('codeShow').hidden=true;$('codeIn').focus()};
+$('codeBtn').onclick=async()=>{
+  if(!TG){toast('Открой Level Up кнопкой в боте @levelup_fit_bot');return}
+  const v=$('codeIn').value.trim();if(!v){$('codeIn').focus();return}
+  const b=$('codeBtn');b.disabled=true;b.textContent='Проверяю…';
+  const r=await api('code',{code:v});
+  b.disabled=false;b.textContent='Активировать';
+  if(r&&r.ok){vib('win');await checkStatus()}else{vib('warn');toast(r&&r.msg?r.msg:'Не получилось проверить код. Попробуй ещё раз')}
+};
 $('payBtn').onclick=async()=>{
   if(!TG){toast('Открой Level Up кнопкой в боте @levelup_fit_bot');return}
   const b=$('payBtn');b.disabled=true;b.textContent='Секунду…';
