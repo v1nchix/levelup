@@ -774,9 +774,9 @@ input,select{font-size:16px}
   <section class="onb-step" data-s="1">
     <span class="tag">Шаг 2 из 5</span>
     <h2>Что есть <span class="accent">дома</span></h2>
-    <p class="lead">Отметь всё, что есть. Нет ничего? Не страшно, жми «Дальше»: хватит пола.</p>
+    <p class="lead">Отметь всё, что есть. Нет ничего? Не страшно: хватит пола.</p>
     <div class="opts" data-g="inv">
-      <button class="opt" data-v="stepper">Степпер</button><button class="opt" data-v="mat">Коврик</button><button class="opt" data-v="db">Гантели</button><button class="opt" data-v="bands">Резинки</button><button class="opt" data-v="rope">Скакалка</button><button class="opt" data-v="roller">Ролик для пресса</button><button class="opt" data-v="bar">Турник</button><button class="opt" data-v="bike">Велотренажёр или дорожка</button>
+      <button class="opt" data-v="none">Ничего нет</button><button class="opt" data-v="db">Гантели</button><button class="opt" data-v="bands">Резинки</button><button class="opt" data-v="stepper">Степпер</button><button class="opt" data-v="step">Степ-платформа или крепкая скамейка</button><button class="opt" data-v="rope">Скакалка</button><button class="opt" data-v="roller">Ролик для пресса</button><button class="opt" data-v="bar">Турник</button><button class="opt" data-v="tread">Беговая дорожка</button><button class="opt" data-v="bike">Велотренажёр</button>
     </div>
   </section>
 
@@ -793,7 +793,7 @@ input,select{font-size:16px}
     </div>
     <div class="olabel">Как обычно передвигаешься по городу</div>
     <div class="opts" data-g="commute" data-single>
-      <button class="opt" data-v="walk">Пешком</button><button class="opt" data-v="transport">На автобусе или метро</button><button class="opt" data-v="car">На машине или такси</button><button class="opt" data-v="none">Почти никуда не выхожу</button>
+      <button class="opt" data-v="walk">Пешком</button><button class="opt" data-v="transport">На автобусе или метро</button><button class="opt" data-v="car">На машине или такси</button><button class="opt" data-v="cycle">На велосипеде или самокате</button><button class="opt" data-v="none">Почти никуда не выхожу</button>
     </div>
     <div class="olabel">Сколько времени в день есть на задания</div>
     <div class="opts" data-g="time" data-single>
@@ -804,6 +804,8 @@ input,select{font-size:16px}
       <button class="opt big" data-v="games"><b>Играю в компьютерные игры</b><span>будут приседания между катками</span></button>
       <button class="opt big" data-v="series"><b>Смотрю сериалы или YouTube</b><span>будет движение во время серии</span></button>
       <button class="opt big" data-v="dog"><b>Есть собака</b><span>прогулки с ней пойдут в зачёт</span></button>
+      <button class="opt big" data-v="kids"><b>Есть дети</b><span>прогулки и активные игры с ними пойдут в зачёт</span></button>
+      <button class="opt big" data-v="gym"><b>Хожу в зал или бассейн</b><span>тренировка там засчитается вместо домашней</span></button>
       <button class="opt big" data-v="shops"><b>Магазин или кафе в 10 минутах пешком</b><span>будет задание сходить пешком, а не заказывать</span></button>
       <button class="opt big" data-v="stairs"><b>Живу или работаю выше 2 этажа</b><span>будет задание подняться по лестнице</span></button>
     </div>
@@ -826,7 +828,7 @@ input,select{font-size:16px}
     <h2>Еда и <span class="accent">режим</span></h2>
     <p class="lead">Что с едой даётся тяжелее всего? Можно несколько.</p>
     <div class="opts" data-g="food">
-      <button class="opt" data-v="sweets">Сладкое</button><button class="opt" data-v="delivery">Доставка и фастфуд</button><button class="opt" data-v="night">Ночные перекусы</button><button class="opt" data-v="skip">Пропускаю завтрак</button><button class="opt" data-v="soda">Сладкая газировка</button>
+      <button class="opt" data-v="sweets">Сладкое</button><button class="opt" data-v="delivery">Доставка и фастфуд</button><button class="opt" data-v="night">Ночные перекусы</button><button class="opt" data-v="skip">Пропускаю завтрак</button><button class="opt" data-v="soda">Сладкая газировка</button><button class="opt" data-v="bread">Хлеб, выпечка, мучное</button><button class="opt" data-v="alco">Алкоголь</button><button class="opt" data-v="snack">Перекусы на работе</button>
     </div>
     <div class="olabel">Режим сна</div>
     <div class="opts" data-g="chrono" data-single>
@@ -845,7 +847,7 @@ input,select{font-size:16px}
 const KEY='levelup.v1';
 // Версия сборки: проставляется скриптом deploy-app.ps1. Телеграм любит показывать старую копию из кэша,
 // поэтому при открытии приложение сверяет версию с сайтом и, если вышла новая, перезагружается.
-const BUILD='20261005-042750';
+const BUILD='20261005-043254';
 async function checkUpdate(){
   if(BUILD==='dev'||location.protocol==='file:')return;
   try{const t=await (await fetch('./?b='+Date.now(),{cache:'no-store'})).text(),m=t.match(/BUILD\s*=\s*'(\d{8}-\d{6})'/);
@@ -1143,6 +1145,7 @@ function exLib(wk){const p=P(),m=p.sex==='m',db=has('inv','db'),bands=has('inv',
     splank:{n:'Боковая планка',b:20,u:'sec',side:1,a:'sideplank',tip:'Опора на локоть и стопы, таз не проваливается.'},
     deadbug:{n:'Мёртвый жук',b:10,side:1,a:'deadbug',tip:'Лёжа на спине, поясница прижата к полу. Тянешь противоположные руку и ногу.'},
     birddog:{n:'Птица-собака',b:10,side:1,a:'birddog',tip:'На четвереньках вытягиваешь противоположные руку и ногу, спина ровная.'},
+    stepup:{n:'Зашагивания на платформу',b:10,side:1,a:'stepup',tip:'Ставишь всю стопу на платформу и поднимаешься за счёт этой ноги, нижней не отталкиваешься. Вниз медленно.'},
     climber:{n:'Скалолаз',b:20,a:'climber',tip:'Из упора лёжа по очереди подтягиваешь колени к груди. Темп спокойный.'},
     jacks:{n:p.run==='no'?'Шаги в стороны с руками вверх':'Прыжки «звёздочка»',b:30,a:'jacks',tip:p.run==='no'?'Без прыжков: шаг в сторону и руки вверх, по очереди в каждую сторону.':'Ноги в стороны, руки вверх, приземляешься мягко на носки.'},
     crunch:roller?{n:'Ролик для пресса',b:8,a:'roller',tip:'С колен выкатываешь ролик вперёд, пока держишь спину ровной.'}:{n:'Скручивания',b:15,a:'crunch',tip:'Поясница прижата к полу, поднимаешь только лопатки.'}
@@ -1158,7 +1161,9 @@ const STRETCH=[
 const REG={};
 const progMult=wk=>Math.min(2,1+.15*Math.floor((wk-1)/2));  // каждые 2 недели примерно +15%
 function amt(e,mult){const v=e.u==='sec'?Math.round(e.b*mult/5)*5:Math.round(e.b*mult);return (e.u==='sec'?v+' сек':'× '+v)+(e.side?' на сторону':'')}
-function workoutByIndex(i,wk){const L=exLib(wk),w=WORKOUTS[i],mult=progMult(wk);return {kind:'str',n:w.n,items:w.ex.map(k=>{const e=L[k];return {n:e.n,amt:amt(e,mult),a:e.a,tip:e.tip}})}}
+function workoutByIndex(i,wk){const L=exLib(wk),w=WORKOUTS[i],mult=progMult(wk),ex=w.ex.slice();
+  if(i===2&&has('inv','step'))ex.splice(2,0,'stepup');   // есть платформа: в «Всё тело» добавляются зашагивания
+  return {kind:'str',n:w.n,items:ex.map(k=>{const e=L[k];return {n:e.n,amt:amt(e,mult),a:e.a,tip:e.tip}})}}
 function workoutFor(ds){const I=info(ds),T=I.T;
   if(I.str)return Object.assign(workoutByIndex(Math.max(0,[2,4,6].indexOf(I.wd)),I.week),{rounds:T===15?2:T===45?4:3,min:T===15?10:T===45?25:15});
   const st=STRETCH[((I.n%2)+2)%2];
@@ -1282,8 +1287,8 @@ function exShow(){const it=EXL[EXI];$('exTag').textContent=EXN+' · '+(EXI+1)+' 
 function quests(ds){
   const I=info(ds),r=RUN[I.rw-1],p=P(),st=strength(),wk=({15:15,30:20,45:30})[I.T],sun=({15:20,30:30,45:45})[I.T];
   const move=I.run
-    ?(I.norun?{t:'Быстрая ходьба '+walkMin(I)+' минут',s:(has('inv','stepper')?'Или столько же на степпере. ':'')+'Темп такой, чтобы чуть сбивалось дыхание. Каждую неделю +5 минут.'}
-             :{t:'Пробежка',s:`Неделя ${I.rw}: ${r[0]}. Сначала 5 минут шагом.`+(p.chrono==='lark'?' Лучше с утра.':'')})
+    ?(I.norun?{t:'Быстрая ходьба '+walkMin(I)+' минут',s:(has('inv','stepper')?'Или столько же на степпере. ':'')+(has('inv','tread')?'Можно на беговой дорожке. ':'')+'Темп такой, чтобы чуть сбивалось дыхание. Каждую неделю +5 минут.'}
+             :{t:'Пробежка',s:`Неделя ${I.rw}: ${r[0]}. Сначала 5 минут шагом.`+(has('inv','tread')?' В плохую погоду можно на дорожке.':'')+(p.chrono==='lark'?' Лучше с утра.':'')})
     :(I.wd===0?{t:'Прогулка '+sun+' минут',s:'Спокойный темп, музыка или подкаст. День восстановления.'}
               :{t:'Прогулка '+wk+' минут',s:'Быстрым шагом, до лёгкой одышки.'+(has('life','dog')?' Можно с собакой.':has('life','shops')?' Можно совместить с магазином.':'')});
   const clean=has('food','sweets')?{t:'Сладкое: максимум одна порция за день',s:'Одна порция в день это нормально. Сложнее остановиться на второй и третьей.'}
@@ -1292,7 +1297,8 @@ function quests(ds){
   return [
     {id:'move',xp:30,...move},
     (()=>{const wo=workoutFor(ds);return {id:'body',xp:25,wo,t:wo.kind==='str'?'Силовая · '+wo.n:'Растяжка '+wo.min+' минут',
-      s:wo.kind==='str'?wo.rounds+' круга, около '+wo.min+' минут. Между кругами минута отдыха.':'Спокойно, без рывков. Можно под сериал.'}})(),
+      s:(wo.kind==='str'?wo.rounds+' круга, около '+wo.min+' минут. Между кругами минута отдыха.':'Спокойно, без рывков. Можно под сериал.')
+        +(has('life','gym')?' '+G('Была','Был')+' сегодня в зале или бассейне? Отмечай, это засчитывается.':'')}})(),
     {id:'steps',xp:20,type:'steps',t:'Шаги: '+fmt(I.steps),s:'Вечером посмотри в телефоне и впиши. Цель растёт на 500 каждую неделю.'},
     {id:'protein',xp:15,t:'Белок в каждом приёме еды',s:'Ладонь белка на тарелке: яйца, творог, курица, рыба, йогурт.'},
     {id:'water',xp:10,type:'water',t:'Вода: 6 стаканов',s:'Первый сразу после пробуждения, дальше по стакану перед едой.'},
@@ -1308,13 +1314,19 @@ function bonuses(){
   if(has('food','delivery'))B.push({id:'home',xp:10,t:'Ни одной доставки за день',s:'Готовое из магазина считается: курица-гриль, салат, творог.'});
   if(has('food','night'))B.push({id:'night',xp:10,t:'Последняя еда за 2 часа до сна',s:'Голодно поздно: кефир или творог, это можно.'});
   if(has('food','soda')&&has('food','sweets'))B.push({id:'soda',xp:8,t:'Без сладкой газировки',s:'Газировка без сахара или вода с лимоном.'});
+  if(has('food','bread'))B.push({id:'bread',xp:8,t:'Мучное: не больше одного раза за день',s:'Кусок хлеба к супу можно. Булки и печенье замени на хлебцы, творог или фрукт.'});
+  if(has('food','alco'))B.push({id:'alco',xp:10,t:'День без алкоголя',s:'Если праздник: бокал, а не бутылка, и стакан воды между бокалами.'});
+  if(has('food','snack'))B.push({id:'snack',xp:8,t:'Перекус из дома',s:'Возьми с собой йогурт, фрукт или орехи, чтобы не тянуться к печенью на работе.'});
   if(has('life','series'))B.push({id:'series',xp:10,t:'Сериал в движении',s:st?'Посмотри серию, шагая на степпере.':'Каждые 5 минут серии: 10 приседаний или планка 30 секунд.'});
   if(has('life','shops'))B.push({id:'walk',xp:10,t:G('Сходила','Сходил')+' по делам пешком',s:'Магазин, кафе, аптека. Шаги, которые не надо специально искать.'});
   if(has('life','dog'))B.push({id:'dog',xp:10,t:'Длинная прогулка с собакой',s:'30 минут и больше, быстрым шагом. Собака точно за.'});
+  if(has('life','kids'))B.push({id:'kids',xp:10,t:'Активная прогулка с детьми',s:'Площадка, догонялки, велосипед рядом: 30 минут в движении, а не на лавочке.'});
+  if(has('life','gym'))B.push({id:'gym',xp:15,t:'Зал или бассейн',s:'Любая тренировка там: силовая, плавание, групповое занятие.'});
+  if(P().commute==='cycle')B.push({id:'cycle',xp:10,t:'Поездка на велосипеде или самокате',s:'20 минут и больше своими силами. Электросамокат не считается.'});
   if(P().commute==='transport')B.push({id:'stop',xp:8,t:'Выйти на остановку раньше',s:'И дойти пешком. Плюс 1 000-1 500 шагов.'});
   if(P().commute==='car')B.push({id:'park',xp:8,t:'Оставить машину подальше',s:'Парковка в 10 минутах от входа или выйти из такси раньше. Плюс 1 000 шагов.'});
   if(has('life','stairs'))B.push({id:'stairs',xp:8,t:'Лестница вместо лифта',s:'Хотя бы раз за день вверх пешком.'});
-  if(has('inv','bike'))B.push({id:'cardio',xp:10,t:'Кардио 20 минут на тренажёре',s:'Спокойный темп под сериал или подкаст.'});
+  if(has('inv','bike')||has('inv','tread'))B.push({id:'cardio',xp:10,t:'Кардио 20 минут на '+(has('inv','bike')&&!has('inv','tread')?'велотренажёре':has('inv','tread')&&!has('inv','bike')?'дорожке':'тренажёре'),s:'Спокойный темп под сериал или подкаст.'});
   if(has('inv','bar'))B.push({id:'hang',xp:6,t:'Вис на турнике',s:'3 × 20 секунд. Разгружает спину после дня за компом.'});
   B.push({id:'core',xp:10,t:'Пресс 5 минут',s:has('inv','roller')?'Ролик 3 × 8.':has('inv','rope')?'Скакалка 3 × 50 прыжков.':'Скручивания 3 × 15 и планка 30 секунд.'});
   return B;
@@ -1878,6 +1890,8 @@ function obGo(i){obStep=i;document.querySelectorAll('.onb-step').forEach(s=>s.cl
   $('obBack').hidden=i===0;$('obNext').textContent=i===4?'Собрать мой план':'Дальше';$('oErr').textContent='';$('onb').querySelector('.card').scrollTop=0}
 document.addEventListener('click',e=>{const o=e.target.closest('#onb .opt');if(!o)return;const g=o.parentElement;
   if(g.hasAttribute('data-single'))g.querySelectorAll('.opt').forEach(x=>x.classList.toggle('on',x===o));else o.classList.toggle('on');
+  // «Ничего нет» исключает остальной инвентарь и наоборот
+  if(g.dataset.g==='inv'&&o.classList.contains('on'))g.querySelectorAll('.opt').forEach(x=>{if(x!==o&&(o.dataset.v==='none'||x.dataset.v==='none'))x.classList.remove('on')});
   if(g.dataset.g==='theme')setTheme(o.dataset.v);
   vib('select');
   if(g.dataset.g==='snd'){setSound(o.dataset.v);return}  // выбор звука сразу проигрывает его
