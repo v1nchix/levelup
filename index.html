@@ -851,7 +851,7 @@ input,select{font-size:16px}
 const KEY='levelup.v1';
 // Версия сборки: проставляется скриптом deploy-app.ps1. Телеграм любит показывать старую копию из кэша,
 // поэтому при открытии приложение сверяет версию с сайтом и, если вышла новая, перезагружается.
-const BUILD='20261005-044345';
+const BUILD='20261005-085307';
 async function checkUpdate(){
   if(BUILD==='dev'||location.protocol==='file:')return;
   try{const t=await (await fetch('./?b='+Date.now(),{cache:'no-store'})).text(),m=t.match(/BUILD\s*=\s*'(\d{8}-\d{6})'/);
@@ -1131,9 +1131,9 @@ const walkMin=I=>Math.min(50,({15:15,30:25,45:35})[I.T]+5*(I.week-1));
 // ---------- тренировки: три силовые по очереди (Вт, Чт, Сб) и две растяжки, повторы растут по неделям ----------
 function exLib(wk){const p=P(),m=p.sex==='m',db=has('inv','db'),bands=has('inv','bands'),bar=has('inv','bar'),roller=has('inv','roller'),adv=wk>=5;
   return {
-    squat:{n:db?'Гоблет-присед с гантелью':adv?'Присед с паузой внизу':'Приседания',b:15,a:'squat',tip:'Пятки в пол, колени смотрят туда же, куда носки, спина ровная.'+(adv&&!db?' Внизу задержись на 2 секунды.':'')},
-    bridge:{n:adv?'Мостик на одной ноге':bands?'Ягодичный мостик с резинкой':'Ягодичный мостик',b:adv?10:15,side:adv,a:'bridge',tip:'Наверху сожми ягодицы на 2 секунды, поясницу не прогибай.'},
-    lunge:{n:db?'Выпады назад с гантелями':'Выпады назад',b:10,side:1,a:'lunge',tip:'Шаг назад, колено почти касается пола, корпус прямо.'},
+    squat:{n:db?'Гоблет-присед с гантелью':adv?'Присед с паузой внизу':'Приседания',b:15,a:db?'squatdb':'squat',tip:'Пятки в пол, колени смотрят туда же, куда носки, спина ровная.'+(adv&&!db?' Внизу задержись на 2 секунды.':'')},
+    bridge:{n:adv?'Мостик на одной ноге':bands?'Ягодичный мостик с резинкой':'Ягодичный мостик',b:adv?10:15,side:adv,a:adv?'bridge1':bands?'bridgeband':'bridge',tip:'Наверху сожми ягодицы на 2 секунды, поясницу не прогибай.'},
+    lunge:{n:db?'Выпады назад с гантелями':'Выпады назад',b:10,side:1,a:db?'lungedb':'lunge',tip:'Шаг назад, колено почти касается пола, корпус прямо.'},
     side:{n:'Боковые выпады',b:10,side:1,a:'sidelunge',tip:'Широкий шаг в сторону, садишься на одну ногу, вторая остаётся прямой.'},
     calf:{n:'Подъёмы на носки',b:20,a:'calf',tip:'Медленно вверх и вниз. Можно держаться за стену.'},
     push:{n:m?(adv?'Отжимания узкие':'Отжимания'):(adv?'Отжимания':'Отжимания с колен'),b:m?10:8,a:(m||adv)?'pushup':'kneepush',tip:'Корпус прямой, как доска, локти под углом 45 градусов к телу.'},
@@ -1146,12 +1146,12 @@ function exLib(wk){const p=P(),m=p.sex==='m',db=has('inv','db'),bands=has('inv',
          :{n:'Отжимания от стены',b:15,a:'wallpush',tip:'Ладони на стене на уровне плеч, тело прямое, сгибаешь локти.'},
     dips:{n:'Обратные отжимания от стула',b:10,a:'dips',tip:'Руки на краю устойчивого стула за спиной, локти сгибаешь строго назад.'},
     plank:{n:'Планка',b:30,u:'sec',a:'plank',tip:'На локтях, тело в одну линию, живот подтянут.'},
-    splank:{n:'Боковая планка',b:20,u:'sec',side:1,a:'sideplank',tip:'Опора на локоть и стопы, таз не проваливается.'},
+    splank:{n:'Боковая планка',b:20,u:'sec',side:1,a:'sideplank',tip:'Опора на ладонь или локоть и стопы, таз не проваливается.'},
     deadbug:{n:'Мёртвый жук',b:10,side:1,a:'deadbug',tip:'Лёжа на спине, поясница прижата к полу. Тянешь противоположные руку и ногу.'},
     birddog:{n:'Птица-собака',b:10,side:1,a:'birddog',tip:'На четвереньках вытягиваешь противоположные руку и ногу, спина ровная.'},
     stepup:{n:'Зашагивания на платформу',b:10,side:1,a:'stepup',tip:'Ставишь всю стопу на платформу и поднимаешься за счёт этой ноги, нижней не отталкиваешься. Вниз медленно.'},
     climber:{n:'Скалолаз',b:20,a:'climber',tip:'Из упора лёжа по очереди подтягиваешь колени к груди. Темп спокойный.'},
-    jacks:{n:p.run==='no'?'Шаги в стороны с руками вверх':'Прыжки «звёздочка»',b:30,a:'jacks',tip:p.run==='no'?'Без прыжков: шаг в сторону и руки вверх, по очереди в каждую сторону.':'Ноги в стороны, руки вверх, приземляешься мягко на носки.'},
+    jacks:{n:p.run==='no'?'Шаги в стороны с руками вверх':'Прыжки «звёздочка»',b:30,a:p.run==='no'?'stepjacks':'jacks',tip:p.run==='no'?'Без прыжков: шаг в сторону и руки вверх, по очереди в каждую сторону.':'Ноги в стороны, руки вверх, приземляешься мягко на носки.'},
     crunch:roller?{n:'Ролик для пресса',b:8,a:'roller',tip:'С колен выкатываешь ролик вперёд, пока держишь спину ровной.'}:{n:'Скручивания',b:15,a:'crunch',tip:'Поясница прижата к полу, поднимаешь только лопатки.'}
   }}
 const WORKOUTS=[{n:'Ноги и ягодицы',ex:['squat','bridge','lunge','side','calf','plank']},
@@ -1271,13 +1271,18 @@ function figDraw(k){const {A,B,R}=FIGS,J={};
 let F3=null,F3P=null;
 // позы манекена картинками (img/ex/<id>-N.webp): плавно перетекают по кругу 1→2→3→2.
 // Упражнения без картинок пока без фигуры: 3D-робот и плоские схемы владелице не нравятся.
-const FRAMES={squat:3},FRAMES_V=1;
+const FRAMES={squat:3,squatdb:3,bridge:3,bridgeband:3,bridge1:3,lunge:3,lungedb:3,sidelunge:3,calf:3,plank:1,
+  kneepush:3,pushup:3,superman:3,dbrow:3,bandrow:3,auspull:3,wallpush:3,pike:3,press:3,dips:3,deadbug:3,sideplank:3,
+  jacks:3,stepjacks:3,stepup:3,climber:3,birddog:3,crunch:3,roller:3,
+  hamstring:3,hipflexor:3,catcow:3,child:3,quad:3,butterfly:3,twist:3,chest:3},FRAMES_V=2;
 let FRT=0;
 function framesShow(name){const box=$('exFig'),n=FRAMES[name];clearInterval(FRT);
-  const dark=!document.documentElement.classList.contains('light');   // в тёмной теме кадры на чёрном фоне (-d)
+  // тёмная тема: белый манекен на чёрном (-d); светлая: тёмный манекен на белом (-l)
+  const dark=!document.documentElement.classList.contains('light');
   box.hidden=false;box.classList.add('frm');box.classList.toggle('dk',dark);
-  box.innerHTML=Array.from({length:n},(_,i)=>`<img src="img/ex/${name}-${i+1}${dark?'-d':''}.webp?v=${FRAMES_V}" alt=""${i===0?' class="on"':''}>`).join('');
-  const imgs=[...box.children],seq=[...Array(n).keys(),...Array.from({length:n-2},(_,i)=>n-2-i)];
+  box.innerHTML=Array.from({length:n},(_,i)=>`<img src="img/ex/${name}-${i+1}${dark?'-d':'-l'}.webp?v=${FRAMES_V}" alt=""${i===0?' class="on"':''}>`).join('');
+  const imgs=[...box.children],seq=[...Array(n).keys(),...Array.from({length:Math.max(0,n-2)},(_,i)=>n-2-i)];
+  if(n===1)return;
   if(calm()){imgs.forEach((im,i)=>im.classList.toggle('on',i===n-1));return}
   let k=0;FRT=setInterval(()=>{if(!$('exm').classList.contains('show')||!box.contains(imgs[0])){clearInterval(FRT);return}
     k=(k+1)%seq.length;imgs.forEach((im,i)=>im.classList.toggle('on',i===seq[k]))},950)}
