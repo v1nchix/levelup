@@ -372,6 +372,9 @@ input,select{font-size:16px}
 .figbox{margin-top:16px;border:1px solid var(--line);border-radius:16px;background:rgba(var(--ink),.03);aspect-ratio:1/1;max-width:100%}
 .fig{width:100%;height:100%;display:block}
 .fig3{width:100%;height:100%;display:block;border-radius:16px}
+.figbox.frm{position:relative;overflow:hidden;background:#fff;border-color:rgba(var(--ink),.12)}
+.figbox.frm img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;opacity:0;transition:opacity .6s ease-in-out}
+.figbox.frm img.on{opacity:1}
 .figload{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;font-size:12px;color:var(--muted)}
 .figload i{width:22px;height:22px;border-radius:50%;border:2px solid rgba(var(--ink),.15);border-top-color:var(--hi);animation:spin .9s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -718,7 +721,7 @@ input,select{font-size:16px}
   <div class="figbox" id="exFig"></div>
   <div class="mini" id="exAmt" style="display:inline-flex;margin-top:14px"></div>
   <p class="lead" id="exTip" style="margin-top:12px;font-size:14px"></p>
-  <p class="small">Схема показывает движение. Если что-то болит, пропусти упражнение.</p>
+  <p class="small">Если что-то болит, пропусти упражнение.</p>
   <div class="onb-nav"><button class="btn" id="exPrev">Назад</button><button class="btn solid" id="exNext">Дальше</button></div>
   <button class="btn" id="exClose" style="width:100%;margin-top:10px">Закрыть</button>
 </div></div>
@@ -847,7 +850,7 @@ input,select{font-size:16px}
 const KEY='levelup.v1';
 // Версия сборки: проставляется скриптом deploy-app.ps1. Телеграм любит показывать старую копию из кэша,
 // поэтому при открытии приложение сверяет версию с сайтом и, если вышла новая, перезагружается.
-const BUILD='20261005-043620';
+const BUILD='20261005-044055';
 async function checkUpdate(){
   if(BUILD==='dev'||location.protocol==='file:')return;
   try{const t=await (await fetch('./?b='+Date.now(),{cache:'no-store'})).text(),m=t.match(/BUILD\s*=\s*'(\d{8}-\d{6})'/);
@@ -1265,7 +1268,20 @@ function figDraw(k){const {A,B,R}=FIGS,J={};
   FIGS.sh.setAttribute('cx',f2((x0+x1)/2));FIGS.sh.setAttribute('rx',f2(Math.max(9,(x1-x0)/2+7)))}
 // 3D-манекен (fig3.js + fig.glb грузятся только при первом открытии «Как делать»); если 3D недоступно — плоская фигура
 let F3=null,F3P=null;
+// позы манекена картинками (img/ex/<id>-N.webp): плавно перетекают по кругу 1→2→3→2.
+// Упражнения без картинок пока без фигуры: 3D-робот и плоские схемы владелице не нравятся.
+const FRAMES={squat:3},FRAMES_V=1;
+let FRT=0;
+function framesShow(name){const box=$('exFig'),n=FRAMES[name];clearInterval(FRT);
+  box.hidden=false;box.classList.add('frm');
+  box.innerHTML=Array.from({length:n},(_,i)=>`<img src="img/ex/${name}-${i+1}.webp?v=${FRAMES_V}" alt=""${i===0?' class="on"':''}>`).join('');
+  const imgs=[...box.children],seq=[...Array(n).keys(),...Array.from({length:n-2},(_,i)=>n-2-i)];
+  if(calm()){imgs.forEach((im,i)=>im.classList.toggle('on',i===n-1));return}
+  let k=0;FRT=setInterval(()=>{if(!$('exm').classList.contains('show')||!box.contains(imgs[0])){clearInterval(FRT);return}
+    k=(k+1)%seq.length;imgs.forEach((im,i)=>im.classList.toggle('on',i===seq[k]))},950)}
 function figShow(name){const box=$('exFig');
+  if(FRAMES[name]){framesShow(name);return}
+  clearInterval(FRT);box.classList.remove('frm');box.innerHTML='';box.hidden=true;return;
   if(F3===false){figMount(name);return}
   const go=()=>{if(EXL[EXI]&&EXL[EXI].a!==name)return;
     if(F3&&POSE[name]){if(F3.canvas.parentNode!==box){box.innerHTML='';box.appendChild(F3.canvas)}
