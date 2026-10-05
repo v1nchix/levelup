@@ -373,6 +373,7 @@ input,select{font-size:16px}
 .fig{width:100%;height:100%;display:block}
 .fig3{width:100%;height:100%;display:block;border-radius:16px}
 .figbox.frm{position:relative;overflow:hidden;background:#fff;border-color:rgba(var(--ink),.12)}
+.figbox.frm.dk{background:#111114}
 .figbox.frm img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;opacity:0;transition:opacity .6s ease-in-out}
 .figbox.frm img.on{opacity:1}
 .figload{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;font-size:12px;color:var(--muted)}
@@ -850,7 +851,7 @@ input,select{font-size:16px}
 const KEY='levelup.v1';
 // Версия сборки: проставляется скриптом deploy-app.ps1. Телеграм любит показывать старую копию из кэша,
 // поэтому при открытии приложение сверяет версию с сайтом и, если вышла новая, перезагружается.
-const BUILD='20261005-044055';
+const BUILD='20261005-044345';
 async function checkUpdate(){
   if(BUILD==='dev'||location.protocol==='file:')return;
   try{const t=await (await fetch('./?b='+Date.now(),{cache:'no-store'})).text(),m=t.match(/BUILD\s*=\s*'(\d{8}-\d{6})'/);
@@ -1273,8 +1274,9 @@ let F3=null,F3P=null;
 const FRAMES={squat:3},FRAMES_V=1;
 let FRT=0;
 function framesShow(name){const box=$('exFig'),n=FRAMES[name];clearInterval(FRT);
-  box.hidden=false;box.classList.add('frm');
-  box.innerHTML=Array.from({length:n},(_,i)=>`<img src="img/ex/${name}-${i+1}.webp?v=${FRAMES_V}" alt=""${i===0?' class="on"':''}>`).join('');
+  const dark=!document.documentElement.classList.contains('light');   // в тёмной теме кадры на чёрном фоне (-d)
+  box.hidden=false;box.classList.add('frm');box.classList.toggle('dk',dark);
+  box.innerHTML=Array.from({length:n},(_,i)=>`<img src="img/ex/${name}-${i+1}${dark?'-d':''}.webp?v=${FRAMES_V}" alt=""${i===0?' class="on"':''}>`).join('');
   const imgs=[...box.children],seq=[...Array(n).keys(),...Array.from({length:n-2},(_,i)=>n-2-i)];
   if(calm()){imgs.forEach((im,i)=>im.classList.toggle('on',i===n-1));return}
   let k=0;FRT=setInterval(()=>{if(!$('exm').classList.contains('show')||!box.contains(imgs[0])){clearInterval(FRT);return}
