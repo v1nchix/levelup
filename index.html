@@ -357,6 +357,7 @@ input,select{font-size:16px}
 .profile{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
 [hidden]{display:none!important}
 #wsGrid .tot b{font-size:22px;white-space:nowrap}
+#wsGrid .tot small{font-family:var(--body);font-variation-settings:normal;font-size:13px;font-weight:500;color:var(--muted)}
 .stc{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
 .stc .opt{padding:9px 13px;font-size:13px}
 /* тренировка списком и схемы упражнений */
@@ -844,7 +845,7 @@ input,select{font-size:16px}
 const KEY='levelup.v1';
 // Версия сборки: проставляется скриптом deploy-app.ps1. Телеграм любит показывать старую копию из кэша,
 // поэтому при открытии приложение сверяет версию с сайтом и, если вышла новая, перезагружается.
-const BUILD='20261005-042702';
+const BUILD='20261005-042750';
 async function checkUpdate(){
   if(BUILD==='dev'||location.protocol==='file:')return;
   try{const t=await (await fetch('./?b='+Date.now(),{cache:'no-store'})).text(),m=t.match(/BUILD\s*=\s*'(\d{8}-\d{6})'/);
@@ -1598,8 +1599,11 @@ function weekData(mon){const days=Array.from({length:7},(_,i)=>addD(mon,i)).filt
 function weekShow(w){const s=parse(w.mon),e=parse(w.end);
   $('wsTag').textContent='Итог недели · '+s.getDate()+' '+MON[s.getMonth()].slice(0,3)+' - '+e.getDate()+' '+MON[e.getMonth()].slice(0,3);
   $('wsTitle').innerHTML=w.good+' из 7 <span class="accent">дней</span>';
-  const tl=[[fmt(w.xp),'XP за неделю'],[w.cardio,'кардио-тренировок'],[w.dw==null?'нет данных':(w.dw>0?'+':w.dw<0?'−':'')+f1(Math.abs(w.dw))+' кг','вес по среднему'],[w.plank==null?'нет замера':(w.plank>=0?'+':'−')+Math.abs(w.plank)+' сек','планка']];
-  $('wsGrid').innerHTML=tl.map(t=>`<div class="card tot"><b>${t[0]}</b><span>${t[1]}</span></div>`).join('');
+  // число крупно, единица мелко: иначе широкий шрифт не помещается в плитку
+  const tl=[[fmt(w.xp),'','XP за неделю'],[w.cardio,'','кардио-тренировок'],
+    [w.dw==null?'—':(w.dw>0?'+':w.dw<0?'−':'')+f1(Math.abs(w.dw)),w.dw==null?'':'кг',w.dw==null?'вес: мало замеров':'вес по среднему'],
+    [w.plank==null?'—':(w.plank>=0?'+':'−')+Math.abs(w.plank),w.plank==null?'':'сек',w.plank==null?'планка: нет замера':'планка']];
+  $('wsGrid').innerHTML=tl.map(t=>`<div class="card tot"><b>${t[0]}${t[1]?`<small> ${t[1]}</small>`:''}</b><span>${t[2]}</span></div>`).join('');
   $('wsText').textContent=w.good>=5?'Сильная неделя. Так и строится привычка: не идеально, а регулярно.':w.good>=3?'Хорошая неделя. Ещё пара засчитанных дней, и будет отличная.':'Неделя была непростой, так бывает. Новая неделя, новый счёт: начни с трёх простых дел.';
   $('wsum').classList.add('show');vib('win');sfx('day')}
 function checkWeek(){if(!PAID||!S.setup)return;const now=new Date(),sun=now.getDay()===0&&now.getHours()>=18;
