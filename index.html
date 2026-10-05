@@ -857,9 +857,9 @@ input,select{font-size:16px}
 const KEY='levelup.v1';
 // Версия сборки: проставляется скриптом deploy-app.ps1. Телеграм любит показывать старую копию из кэша,
 // поэтому при открытии приложение сверяет версию с сайтом и, если вышла новая, перезагружается.
-const BUILD='20261005-143604';
+const BUILD='20261005-144722';
 async function checkUpdate(){
-  if(BUILD==='dev'||location.protocol==='file:')return;
+  if(BUILD==='dev'||location.protocol==='file:'||TM)return;   // во время таймера не перезагружаемся
   try{const t=await (await fetch('./?b='+Date.now(),{cache:'no-store'})).text(),m=t.match(/BUILD\s*=\s*'(\d{8}-\d{6})'/);
     if(m&&m[1]!==BUILD){const u=new URL(location.href);u.searchParams.set('v',m[1]);location.replace(u.toString())}}catch(e){}
 }
@@ -1821,15 +1821,23 @@ async function keepAwake(){try{if(navigator.wakeLock&&!wlock){wlock=await naviga
 function timerOpen(mode){
   try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();actx.resume()}catch(e){}
   const seq=mode==='move'?moveSeq(view):mode==='test'?[['warm',3],['run',5],['walk',4]]:null;
-  TM={mode,seq,total:seq?seq.reduce((a,x)=>a+x[1],0):0,start:Date.now(),pausedAt:0,paused:0,idx:-1,done:false};
-  $('tmTag').textContent=mode==='plank'?'Секундомер планки':'Таймер';$('tmPause').textContent='Пауза';$('tmStop').textContent=mode==='plank'?'Стоп':'Завершить';
-  $('tmr').classList.add('show');keepAwake();tmTick();TM.iv=setInterval(tmTick,250);
+  TM={mode,seq,total:seq?seq.reduce((a,x)=>a+x[1],0):0,start:Date.now(),pausedAt:0,paused:0,idx:-1,done:false,day:view};
+  tmShow();
+}
+// Таймер переживает сворачивание: Телеграм может выгрузить приложение, тогда он восстанавливается из памяти телефона
+function tmSave(){try{if(TM)localStorage.setItem('lvlTM',JSON.stringify({mode:TM.mode,seq:TM.seq,total:TM.total,start:TM.start,pausedAt:TM.pausedAt,paused:TM.paused,day:TM.day}));else localStorage.removeItem('lvlTM')}catch(e){}}
+function tmRestore(){try{const o=JSON.parse(localStorage.getItem('lvlTM')||'null');if(!o)return;
+  if(Date.now()-o.start>6*3600e3){localStorage.removeItem('lvlTM');return}
+  TM=Object.assign(o,{idx:-1,done:false});tmShow()}catch(e){}}
+function tmShow(){
+  $('tmTag').textContent=TM.mode==='plank'?'Секундомер планки':'Таймер';$('tmPause').textContent=TM.pausedAt?'Продолжить':'Пауза';$('tmStop').textContent=TM.mode==='plank'?'Стоп':'Завершить';
+  $('tmr').classList.add('show');if(!TM.pausedAt)keepAwake();tmSave();tmTick();TM.iv=setInterval(tmTick,250);
 }
 const tmElapsed=()=>((TM.pausedAt||Date.now())-TM.start-TM.paused)/1000;
 function tmTick(){if(!TM)return;const el=tmElapsed();
   if(TM.mode==='plank'){$('tmPhase').innerHTML='Планка <span class="accent">держись</span>';$('tmBig').textContent=mmss(el);$('tmSub').textContent='Тело в одну линию, дыши ровно. Нажми «Стоп», когда больше не можешь.';$('tmBar').style.width=Math.min(100,el/120*100)+'%';return}
   let acc=0,i=0;for(;i<TM.seq.length;i++){if(el<acc+TM.seq[i][1])break;acc+=TM.seq[i][1]}
-  if(i>=TM.seq.length)return tmFinish();
+  if(i>=TM.seq.length){if(CS&&!cloudReady)return;return tmFinish()}   // отметку ставим, когда данные из облака уже загружены
   if(i!==TM.idx){if(TM.idx>=0)alertPhase();TM.idx=i}
   const [k,d]=TM.seq[i],ph=PH[k],nx=TM.seq[i+1];
   $('tmPhase').innerHTML=ph[0]+' <span class="accent">'+ph[1]+'</span>';
@@ -1837,14 +1845,14 @@ function tmTick(){if(!TM)return;const el=tmElapsed();
   $('tmSub').textContent=(TM.seq.length>1?'Интервал '+(i+1)+' из '+TM.seq.length+' · ':'')+(nx?'дальше: '+PH[nx[0]][0].toLowerCase()+' '+mmss(nx[1])+' · ':'')+'всего осталось '+mmss(TM.total-el);
   $('tmBar').style.width=Math.min(100,el/TM.total*100)+'%';
 }
-function tmClose(){clearInterval(TM.iv);try{wlock&&wlock.release()}catch(e){}wlock=null;$('tmr').classList.remove('show');TM=null}
-function tmFinish(){if(!TM||TM.done)return;TM.done=true;alertPhase();const md=TM.mode;tmClose();
+function tmClose(){clearInterval(TM.iv);try{wlock&&wlock.release()}catch(e){}wlock=null;$('tmr').classList.remove('show');TM=null;tmSave()}
+function tmFinish(){if(!TM||TM.done)return;TM.done=true;alertPhase();const md=TM.mode,dy=TM.day||view;tmClose();
   if(md==='test'){overlay('Проверка таймера','Таймер <span class="accent">работает</span>','Так звучит и вибрирует смена интервалов и конец тренировки.');return}
-  const b=snap();const had=rec(view).done.move;rec(view).done.move=true;
+  const b=snap();const had=rec(dy).done.move;rec(dy).done.move=true;
   overlay('Тренировка сделана','Есть <span class="accent">кардио</span>','Засчитано. Тело только что стало чуть выносливее.');
   if(!had)commit(b);
 }
-$('tmPause').onclick=()=>{if(!TM)return;if(TM.pausedAt){TM.paused+=Date.now()-TM.pausedAt;TM.pausedAt=0;$('tmPause').textContent='Пауза';keepAwake()}else{TM.pausedAt=Date.now();$('tmPause').textContent='Продолжить'}tmTick()};
+$('tmPause').onclick=()=>{if(!TM)return;if(TM.pausedAt){TM.paused+=Date.now()-TM.pausedAt;TM.pausedAt=0;$('tmPause').textContent='Пауза';keepAwake()}else{TM.pausedAt=Date.now();$('tmPause').textContent='Продолжить'}tmSave();tmTick()};
 $('tmStop').onclick=()=>{if(!TM)return;
   if(TM.mode==='plank'){const s=Math.floor(tmElapsed());tmClose();$('mP').value=s;toast('Планка: '+s+' секунд. Нажми «Сохранить»');return}
   if(tmElapsed()>=TM.total*0.8)return tmFinish();
@@ -2018,7 +2026,7 @@ function checkSetup(){if(!S.setup)obOpen()}
   }catch(e){cloudReady=true;setSync('Облако Телеграма не ответило. Прогресс пока в памяти телефона.')}
 })();
 if(S.start>TODAY)S.start=TODAY;
-saveLocal();renderAll();checkSetup();syncSoon();checkStatus();setTimeout(()=>{checkComeback();checkWeek()},1500);
+saveLocal();renderAll();checkSetup();syncSoon();checkStatus();setTimeout(()=>{checkComeback();checkWeek()},1500);tmRestore();
 $('remGo').onclick=()=>{try{TG.openTelegramLink('https://t.me/levelup_fit_bot?start=reminders');TG.close()}catch(e){}};
 let delArm=0;
 $('delSrv').onclick=async()=>{const b=$('delSrv');
