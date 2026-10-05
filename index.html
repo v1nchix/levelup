@@ -642,7 +642,6 @@ input,select{font-size:16px}
       <p class="small" style="margin-top:6px">Быстро переключить можно кнопками вверху экрана.</p>
       <div class="opts" id="themeOpts" style="margin-top:14px"><button class="opt" data-theme="auto">Как в Телеграме</button><button class="opt" data-theme="dark">Тёмная</button><button class="opt" data-theme="light">Светлая</button></div>
       <div class="opts" id="soundOpts" style="margin-top:8px"><button class="opt" data-sound="glass">Звуки: стекло</button><button class="opt" data-sound="harp">Звуки: арфа</button><button class="opt" data-sound="game">Звуки: 8-бит</button><button class="opt" data-sound="off">Без звука</button></div>
-      <div class="opts" style="margin-top:8px"><button class="opt" data-try="tick">▶ Галочка</button><button class="opt" data-try="untick">▶ Снять галочку</button><button class="opt" data-try="water">▶ Вода</button><button class="opt" data-try="pop">▶ Плюсик</button><button class="opt" data-try="day">▶ День засчитан</button><button class="opt" data-try="win">▶ Новый уровень</button></div>
     </div>
   </div>
   <div class="card" style="margin-top:14px">
@@ -845,7 +844,7 @@ input,select{font-size:16px}
 const KEY='levelup.v1';
 // Версия сборки: проставляется скриптом deploy-app.ps1. Телеграм любит показывать старую копию из кэша,
 // поэтому при открытии приложение сверяет версию с сайтом и, если вышла новая, перезагружается.
-const BUILD='20261005-033228';
+const BUILD='20261005-042548';
 async function checkUpdate(){
   if(BUILD==='dev'||location.protocol==='file:')return;
   try{const t=await (await fetch('./?b='+Date.now(),{cache:'no-store'})).text(),m=t.match(/BUILD\s*=\s*'(\d{8}-\d{6})'/);
@@ -973,8 +972,7 @@ function vib(kind){try{if(!TG||!TG.HapticFeedback)return;const h=TG.HapticFeedba
 function applySound(){document.documentElement.classList.toggle('mute',!SND);document.querySelectorAll('#soundOpts .opt').forEach(o=>o.classList.toggle('on',o.dataset.sound===SNDMODE))}
 function setSound(mode){SNDMODE=mode;SND=mode!=='off';if(SND)LASTMODE=mode;try{localStorage.setItem(KEY+'.sound',mode)}catch(e){}applySound();if(SND)sfx('tick')}
 document.getElementById('sndBtn').onclick=()=>{setSound(SND?'off':LASTMODE);vib('select')};
-document.addEventListener('click',e=>{const s=e.target.closest('[data-sound]');if(s)setSound(s.dataset.sound);
-  const tr=e.target.closest('[data-try]');if(tr){const set=SETS[SND?SNDMODE:LASTMODE];audio();if(set&&set[tr.dataset.try])set[tr.dataset.try]()}});
+document.addEventListener('click',e=>{const s=e.target.closest('[data-sound]');if(s)setSound(s.dataset.sound)});
 // анимации награды: всплывающие +XP и конфетти в цветах темы
 const calm=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
 function floatXP(el,xp){if(!el||!xp||calm())return;const r=el.getBoundingClientRect(),s=document.createElement('span');
