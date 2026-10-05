@@ -468,7 +468,6 @@ input,select{font-size:16px}
   <div class="subh"><div><h3>Бонусы для быстрых уровней</h3><p class="small" style="margin-top:6px">Собраны под твой образ жизни. В серию не идут, но уровень растёт быстрее.</p></div><span class="xp" id="bonusXp">+0 XP</span></div>
   <div class="quests" id="bonus"></div>
 
-  <p class="small" style="margin-top:28px;text-align:center">Level Up это игра для поддержки режима, а не медицинская услуга. Перед нагрузками при проблемах со здоровьем посоветуйся с врачом. <a href="terms.html" target="_blank" style="color:var(--hi)">Условия</a></p>
   <div class="logrow">
     <div class="card">
       <h3>Вес утром</h3>
@@ -481,6 +480,7 @@ input,select{font-size:16px}
       <div class="energy" id="energy"></div>
     </div>
   </div>
+  <p class="small" style="margin-top:28px;text-align:center">Level Up это игра для поддержки режима, а не медицинская услуга. Перед нагрузками при проблемах со здоровьем посоветуйся с врачом. <a href="terms.html" target="_blank" style="color:var(--hi)">Условия</a></p>
 </section>
 
 <!-- ================= ПЛАН ================= -->
@@ -844,7 +844,7 @@ input,select{font-size:16px}
 const KEY='levelup.v1';
 // Версия сборки: проставляется скриптом deploy-app.ps1. Телеграм любит показывать старую копию из кэша,
 // поэтому при открытии приложение сверяет версию с сайтом и, если вышла новая, перезагружается.
-const BUILD='20261005-042548';
+const BUILD='20261005-042702';
 async function checkUpdate(){
   if(BUILD==='dev'||location.protocol==='file:')return;
   try{const t=await (await fetch('./?b='+Date.now(),{cache:'no-store'})).text(),m=t.match(/BUILD\s*=\s*'(\d{8}-\d{6})'/);
